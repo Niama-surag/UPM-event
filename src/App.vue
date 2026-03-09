@@ -1,7 +1,10 @@
 <script setup>
-import { RouterLink, RouterView } from 'vue-router'
-import HelloWorld from './components/HelloWorld.vue'
+import { auth, db } from "./services/firebase"
+
+console.log("Auth:", auth)
+console.log("Database:", db)
 </script>
+
 
 <template>
   <header>
