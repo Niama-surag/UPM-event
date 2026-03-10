@@ -1,28 +1,33 @@
+<template>
+  <div>
+    <h1>Event Voting</h1>
+
+    <div v-for="event in events" :key="event.id" class="event-card">
+      <h3>{{ event.title }}</h3>
+      <p>{{ event.description }}</p>
+      <p>Votes: {{ event.vote }}</p>
+
+      <VoteAction :eventId="event.id" />
+    </div>
+  </div>
+</template>
+
 <script setup>
 import { ref, onMounted } from "vue"
-import { collection, getDocs } from "firebase/firestore"
-import { db } from "../services/firebase"
+import { collection, onSnapshot } from "firebase/firestore"
+import { db } from "@/services/firebase"
+import VoteAction from "@/components/VoteAction.vue"
 
 const events = ref([])
 
-async function loadEvents() {
-  const querySnapshot = await getDocs(collection(db, "events"))
-  events.value = querySnapshot.docs.map(doc => ({
-    id: doc.id,
-    ...doc.data()
-  }))
-}
+onMounted(() => {
+  const eventsRef = collection(db, "Events")
 
-onMounted(loadEvents)
+  onSnapshot(eventsRef, (snapshot) => {
+    events.value = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }))
+  })
+})
 </script>
-
-<template>
-  <div>
-    <h1>Events Voting</h1>
-    <div v-for="event in events" :key="event.id">
-      <h3>{{ event.title }}</h3>
-      <p>{{ event.description }}</p>
-    </div>
-
-  </div>
-</template>
