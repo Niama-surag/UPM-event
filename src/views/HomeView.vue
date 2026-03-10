@@ -43,7 +43,15 @@ const canViewNotifications = computed(() => {
   max-width: 1200px;
   margin: 0 auto;
 }
-.home-content {
+
+h1 {
+  color: #333;
+  margin-bottom: 30px;
+  text-align: center;
+}
+
+
+.events-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 2rem;

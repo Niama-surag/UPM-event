@@ -33,11 +33,13 @@ const routes = [
       { path: 'club', name: 'club', component: EspaceClub, meta: { requiresAuth: true } },
       { path: 'chat', name: 'chat', component: EspaceChat, meta: { requiresAuth: true } },
       { path: 'events', name: 'events', component: EspaceEvents, meta: { requiresAuth: true } },
-      { path: 'dashboard', name: 'dashboard', component: EspaceDashboard, meta: { requiresAuth: true, requiresRole: ['admin', 'scolarite'] } },
-      { path: 'notifications', name: 'notifications', component: EspaceNotification, meta: { requiresAuth: true } }
+      { path: 'dashboard', name: 'dashboard', component: EspaceDashboard, meta: { requiresAuth: true } },
+      { path: 'notifications', name: 'notifications', component: EspaceNotification, meta: { requiresAuth: true } },
+      { path: 'polls', name: 'polls', component: PollsView }
     ]
-  },
-  
+  }
+
+
 ]
 
 const router = createRouter({

@@ -26,8 +26,9 @@
             <li><router-link to="/events" @click="closeMenu">Events</router-link></li>
             <!-- Dashboard only for admin & scolarite -->
             <li v-if="['admin', 'scolarite'].includes(authStore.userProfile?.role)">
-              <router-link to="/dashboard" @click="closeMenu">Dashboard</router-link>
             </li>
+            <li><router-link to="/polls" @click="closeMenu">Polls</router-link></li>
+            <li><router-link to="/dashboard" @click="closeMenu">Dashboard</router-link></li>
             <li><router-link to="/notifications" @click="closeMenu">Notifications</router-link></li>
             <!-- Admin link only for admin -->
             <li v-if="authStore.userProfile?.role === 'admin'">
