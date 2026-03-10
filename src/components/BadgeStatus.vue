@@ -1,6 +1,6 @@
 <template>
   <span class="badge" :class="type">
-    {{ type === 'free' ? '🎟️ GRATUIT' : '💰 PAYANT' }}
+    {{ type === 'free' ? ' GRATUIT' : ' PAYANT' }}
   </span>
 </template>
 

@@ -1,5 +1,6 @@
 <template>
   <div class="layout">
+    <!-- Navbar -->
     <header :class="{ 'scrolled': isScrolled }">
       <nav class="navbar">
         <div class="nav-brand">
