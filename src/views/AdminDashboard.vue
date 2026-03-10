@@ -2,75 +2,98 @@
   <div class="admin-dashboard">
     <h1>Admin Dashboard</h1>
 
-    <!-- Stats Cards -->
-    <div class="stats-grid">
-      <div class="stat-card">
-        <h3>Total Users</h3>
-        <p>{{ totalUsers }}</p>
-      </div>
-      <div class="stat-card">
-        <h3>Total Events</h3>
-        <p>{{ totalEvents }}</p>
-      </div>
-      <div class="stat-card">
-        <h3>Active Registrations</h3>
-        <p>{{ totalRegistrations }}</p>
-      </div>
+    <!-- Tabs navigation -->
+    <div class="admin-tabs">
+      <button :class="{ active: adminTab === 'overview' }" @click="adminTab = 'overview'">Overview</button>
+      <button :class="{ active: adminTab === 'users' }" @click="adminTab = 'users'">Users</button>
+      <button :class="{ active: adminTab === 'clubs' }" @click="adminTab = 'clubs'">Clubs</button>
+      <button :class="{ active: adminTab === 'events' }" @click="adminTab = 'events'">Events</button>
     </div>
 
-    <!-- Charts Row -->
-    <div class="charts-row">
-      <div class="chart-container">
-        <h3>Users Over Time</h3>
-        <Line :data="usersChartData" :options="chartOptions" />
-      </div>
-      <div class="chart-container">
-        <h3>Events Per Month</h3>
-        <Bar :data="eventsChartData" :options="chartOptions" />
-      </div>
-    </div>
+    <!-- Tab content -->
+    <div class="admin-tab-content">
+      <!-- Overview tab (existing dashboard content) -->
+      <div v-if="adminTab === 'overview'">
+        <div class="stats-grid">
+          <div class="stat-card">
+            <h3>Total Users</h3>
+            <p>{{ totalUsers }}</p>
+          </div>
+          <div class="stat-card">
+            <h3>Total Events</h3>
+            <p>{{ totalEvents }}</p>
+          </div>
+          <div class="stat-card">
+            <h3>Active Registrations</h3>
+            <p>{{ totalRegistrations }}</p>
+          </div>
+        </div>
 
-    <!-- User Details Table -->
-    <div class="user-table">
-      <h3>User Statistics</h3>
-      <table>
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Email</th>
-            <th>Hours Spent</th>
-            <th>Events Joined</th>
-            <th>Role</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="user in usersList" :key="user.id">
-            <td>{{ user.name }}</td>
-            <td>{{ user.email }}</td>
-            <td>{{ user.hoursSpent || 0 }}</td>
-            <td>{{ user.eventsJoined || 0 }}</td>
-            <td>{{ user.role }}</td>
-            <td>
-              <button @click="viewUser(user.id)">View</button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+        <div class="charts-row">
+          <div class="chart-container">
+            <h3>Users Over Time</h3>
+            <Line :data="usersChartData" :options="chartOptions" />
+          </div>
+          <div class="chart-container">
+            <h3>Events Per Month</h3>
+            <Bar :data="eventsChartData" :options="chartOptions" />
+          </div>
+        </div>
 
-    <!-- Real-time Chat -->
-    <div class="chat-section">
-      <h3>Real-time Chat with Users</h3>
-      <div class="chat-messages" ref="chatBox">
-        <div v-for="msg in messages" :key="msg.id" :class="['message', msg.role === 'admin' ? 'admin' : 'user']">
-          <strong>{{ msg.userName }} ({{ msg.role }}):</strong> {{ msg.text }}
-          <span class="time">{{ formatTime(msg.timestamp) }}</span>
+        <div class="user-table">
+          <h3>User Statistics</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Hours Spent</th>
+                <th>Events Joined</th>
+                <th>Role</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="user in usersList" :key="user.id">
+                <td>{{ user.name }}</td>
+                <td>{{ user.email }}</td>
+                <td>{{ user.hoursSpent || 0 }}</td>
+                <td>{{ user.eventsJoined || 0 }}</td>
+                <td>{{ user.role }}</td>
+                <td><button @click="viewUser(user.id)">View</button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="chat-section">
+          <h3>Real-time Chat with Users</h3>
+          <div class="chat-messages" ref="chatBox">
+            <div v-for="msg in messages" :key="msg.id" :class="['message', msg.role === 'admin' ? 'admin' : 'user']">
+              <strong>{{ msg.userName }} ({{ msg.role }}):</strong> {{ msg.text }}
+              <span class="time">{{ formatTime(msg.timestamp) }}</span>
+            </div>
+          </div>
+          <div class="chat-input">
+            <input v-model="newMessage" @keyup.enter="sendMessage" placeholder="Type a message..." />
+            <button @click="sendMessage">Send</button>
+          </div>
         </div>
       </div>
-      <div class="chat-input">
-        <input v-model="newMessage" @keyup.enter="sendMessage" placeholder="Type a message..." />
-        <button @click="sendMessage">Send</button>
+
+      <!-- Users tab -->
+      <div v-if="adminTab === 'users'">
+        <UserManagement />
+      </div>
+
+      <!-- Clubs tab -->
+      <div v-if="adminTab === 'clubs'">
+        <ClubManagement />
+      </div>
+
+      <!-- Events tab -->
+      <div v-if="adminTab === 'events'">
+        <EventManagement />
       </div>
     </div>
   </div>
@@ -84,17 +107,24 @@ import { collection, query, orderBy, onSnapshot, addDoc, serverTimestamp, getDoc
 import { Line, Bar } from 'vue-chartjs'
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, BarElement, Title, Tooltip, Legend } from 'chart.js'
 
+// Import admin management components
+import UserManagement from '@/components/Layouts/UserManagement.vue'
+import ClubManagement from '@/components/Layouts/ClubManagement.vue'
+import EventManagement from '@/components/Layouts/EventManagement.vue' // We'll create this next
+
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, Title, Tooltip, Legend)
 
 const authStore = useAuthStore()
 
-// Stats
+// Active tab
+const adminTab = ref('overview')
+
+// Stats and data
 const totalUsers = ref(0)
 const totalEvents = ref(0)
 const totalRegistrations = ref(0)
 const usersList = ref([])
 
-// Charts data
 const usersChartData = ref({
   labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
   datasets: [{ label: 'Users', data: [65, 59, 80, 81, 56, 55], backgroundColor: '#42b983' }]
@@ -110,7 +140,6 @@ const messages = ref([])
 const newMessage = ref('')
 const chatBox = ref(null)
 
-// Fetch real data from Firestore
 const fetchStats = async () => {
   const usersSnap = await getDocs(collection(db, 'users'))
   totalUsers.value = usersSnap.size
@@ -123,7 +152,6 @@ const fetchStats = async () => {
   totalRegistrations.value = regSnap.size
 }
 
-// Real-time chat
 const loadMessages = () => {
   const q = query(collection(db, 'messages'), orderBy('timestamp', 'asc'))
   onSnapshot(q, (snapshot) => {
@@ -172,6 +200,34 @@ watch(messages, () => scrollToBottom(), { deep: true })
 
 <style scoped>
 .admin-dashboard { padding: 2rem; }
+
+/* Tabs styling */
+.admin-tabs {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  border-bottom: 1px solid #dee2e6;
+  padding-bottom: 0.5rem;
+}
+.admin-tabs button {
+  padding: 0.5rem 1rem;
+  background: none;
+  border: none;
+  font-size: 1rem;
+  cursor: pointer;
+  color: #6c757d;
+  border-radius: 4px 4px 0 0;
+}
+.admin-tabs button:hover {
+  background: #f8f9fa;
+}
+.admin-tabs button.active {
+  color: #007bff;
+  border-bottom: 2px solid #007bff;
+  font-weight: 500;
+}
+
+/* Existing styles */
 .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 2rem; }
 .stat-card { background: #f8f9fa; padding: 1.5rem; border-radius: 8px; text-align: center; }
 .stat-card h3 { margin: 0 0 0.5rem; font-size: 1rem; color: #6c757d; }
