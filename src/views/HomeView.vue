@@ -1,4 +1,11 @@
 <template>
+<<<<<<< HEAD
+  <div>
+    <h1>UPM Events</h1>
+    <p>Welcome to the events platform</p>
+  </div>
+</template>
+=======
   <div class="home">
     <ScrollImages />
     <section class="content">
@@ -22,3 +29,4 @@ import ScrollImages from '@/components/ScrollImages.vue'
   background: #f9f9f9;
 }
 </style>
+>>>>>>> 3fb979e6ebe1c4a9bd571211a17d8452fcdd37ca

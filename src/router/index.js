@@ -8,6 +8,7 @@ import LoginView from '@/views/LoginView.vue'
 import RegisterView from '@/views/RegisterView.vue'
 import ProfileView from '@/views/ProfileView.vue'
 import AdminDashboard from '@/views/AdminDashboard.vue'
+import PollsView from '../views/PollsView.vue'
 import EspaceEtudiant from '@/views/EspaceEtudiant.vue'
 import EspaceClub from '@/views/EspaceClub.vue'
 import EspaceChat from '@/views/EspaceChat.vue'
@@ -33,7 +34,13 @@ const routes = [
       { path: 'dashboard', name: 'dashboard', component: EspaceDashboard, meta: { requiresAuth: true } },
       { path: 'notifications', name: 'notifications', component: EspaceNotification, meta: { requiresAuth: true } }
     ]
-  }
+  },
+
+{
+  path: '/polls',
+  name: 'polls',
+  component: PollsView
+}
 ]
 
 const router = createRouter({
