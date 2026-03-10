@@ -4,6 +4,7 @@
       <nav>
         <router-link to="/">Home</router-link>
         <router-link to="/about">About</router-link>
+        <router-link to="/polls">Polls</router-link>
         <template v-if="authStore.user">
           <router-link v-if="authStore.userProfile?.role === 'admin'" to="/admin">Admin</router-link>
           <span>Welcome, {{ authStore.userProfile?.name || authStore.user.email }}</span>

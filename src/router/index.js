@@ -7,7 +7,7 @@ import AboutView from '@/views/AboutView.vue'
 import LoginView from '@/views/LoginView.vue'
 import RegisterView from '@/views/RegisterView.vue'
 import AdminDashboard from '@/views/AdminDashboard.vue'
-
+import PollsView from '../views/PollsView.vue'
 const routes = [
   {
     path: '/',
@@ -25,7 +25,13 @@ const routes = [
     children: [
       { path: '', name: 'admin', component: AdminDashboard, meta: { requiresAdmin: true } }
     ]
-  }
+  },
+
+{
+  path: '/polls',
+  name: 'polls',
+  component: PollsView
+}
 ]
 
 const router = createRouter({

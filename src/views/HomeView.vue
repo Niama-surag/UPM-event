@@ -1,9 +1,6 @@
-<script setup>
-import TheWelcome from '../components/TheWelcome.vue'
-</script>
-
 <template>
-  <main>
-    <TheWelcome />
-  </main>
+  <div>
+    <h1>UPM Events</h1>
+    <p>Welcome to the events platform</p>
+  </div>
 </template>
