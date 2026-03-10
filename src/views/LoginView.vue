@@ -5,40 +5,20 @@
     <form @submit.prevent="handleLogin">
       <div class="field">
         <label for="email">Email: *</label>
-        <input
-          type="email"
-          id="email"
-          v-model="email"
-          placeholder="jheart@dx-email.com"
-          required
-        />
+        <input type="email" id="email" v-model="email" placeholder="jheart@dx-email.com" required />
       </div>
-
       <div class="field">
         <label for="password">Password: *</label>
-        <input
-          type="password"
-          id="password"
-          v-model="password"
-          placeholder="*********"
-          required
-        />
+        <input type="password" id="password" v-model="password" placeholder="*********" required />
       </div>
-
       <div class="remember-row">
-        <label>
-          <input type="checkbox" v-model="remember" />
-          Remember me
-        </label>
+        <label><input type="checkbox" v-model="remember" /> Remember me</label>
         <a href="#" @click.prevent="handleForgotPassword">Forgot password?</a>
       </div>
-
       <button type="submit" :disabled="loading" class="signin-btn">Sign In</button>
     </form>
 
-    <p class="register-link">
-      Don't have an account? <router-link to="/register">Register</router-link>
-    </p>
+    <p class="register-link">Don't have an account? <router-link to="/register">Register</router-link></p>
 
     <div class="divider">or</div>
 

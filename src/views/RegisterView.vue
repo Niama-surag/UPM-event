@@ -59,8 +59,7 @@ const handleRegister = async () => {
   loading.value = true
   error.value = ''
   try {
-    await authStore.register(email.value, password.value)
-    // Optionally, after registration, you could auto-login or redirect
+    await authStore.register(email.value, password.value, name.value)
     router.push('/')
   } catch (err) {
     error.value = err.message
