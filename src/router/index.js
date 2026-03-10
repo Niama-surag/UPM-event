@@ -8,7 +8,6 @@ import LoginView from '@/views/LoginView.vue'
 import RegisterView from '@/views/RegisterView.vue'
 import ProfileView from '@/views/ProfileView.vue'
 import AdminDashboard from '@/views/AdminDashboard.vue'
-import PollsView from '../views/PollsView.vue'
 import EspaceEtudiant from '@/views/EspaceEtudiant.vue'
 import EspaceClub from '@/views/EspaceClub.vue'
 import EspaceChat from '@/views/EspaceChat.vue'
@@ -26,21 +25,15 @@ const routes = [
       { path: 'login', name: 'login', component: LoginView },
       { path: 'register', name: 'register', component: RegisterView },
       { path: 'profile', name: 'profile', component: ProfileView, meta: { requiresAuth: true } },
-      { path: 'admin', name: 'admin', component: AdminDashboard, meta: { requiresAdmin: true } },
+      { path: 'admin', name: 'admin', component: AdminDashboard, meta: { requiresAuth: true, requiresAdmin: true } },
       { path: 'etudiant', name: 'etudiant', component: EspaceEtudiant, meta: { requiresAuth: true } },
       { path: 'club', name: 'club', component: EspaceClub, meta: { requiresAuth: true } },
       { path: 'chat', name: 'chat', component: EspaceChat, meta: { requiresAuth: true } },
       { path: 'events', name: 'events', component: EspaceEvents, meta: { requiresAuth: true } },
-      { path: 'dashboard', name: 'dashboard', component: EspaceDashboard, meta: { requiresAuth: true } },
+      { path: 'dashboard', name: 'dashboard', component: EspaceDashboard, meta: { requiresAuth: true, requiresRole: ['admin', 'scolarite'] } },
       { path: 'notifications', name: 'notifications', component: EspaceNotification, meta: { requiresAuth: true } }
     ]
-  },
-
-{
-  path: '/polls',
-  name: 'polls',
-  component: PollsView
-}
+  }
 ]
 
 const router = createRouter({
@@ -58,9 +51,18 @@ router.beforeEach((to, from, next) => {
     return next({ name: 'login', query: { redirect: to.fullPath } })
   }
 
+  // Admin check
   if (to.meta.requiresAdmin) {
     const isAdmin = authStore.userProfile?.role === 'admin'
     if (!isAdmin) return next({ name: 'home' })
+  }
+
+  // Role-based check (for dashboard)
+  if (to.meta.requiresRole) {
+    const userRole = authStore.userProfile?.role
+    if (!to.meta.requiresRole.includes(userRole)) {
+      return next({ name: 'home' })
+    }
   }
   next()
 })
