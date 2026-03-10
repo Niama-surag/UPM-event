@@ -37,11 +37,7 @@ const routes = [
       { path: 'notifications', name: 'notifications', component: EspaceNotification, meta: { requiresAuth: true } }
     ]
   },
-  {
-    path: '/polls',
-    name: 'polls',
-    component: PollsView
-  }
+  
 ]
 
 const router = createRouter({
