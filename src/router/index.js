@@ -32,15 +32,12 @@ const routes = [
       { path: 'chat', name: 'chat', component: EspaceChat, meta: { requiresAuth: true } },
       { path: 'events', name: 'events', component: EspaceEvents, meta: { requiresAuth: true } },
       { path: 'dashboard', name: 'dashboard', component: EspaceDashboard, meta: { requiresAuth: true } },
-      { path: 'notifications', name: 'notifications', component: EspaceNotification, meta: { requiresAuth: true } }
+      { path: 'notifications', name: 'notifications', component: EspaceNotification, meta: { requiresAuth: true } },
+      { path: 'polls', name: 'polls', component: PollsView }
     ]
-  },
+  }
 
-{
-  path: '/polls',
-  name: 'polls',
-  component: PollsView
-}
+
 ]
 
 const router = createRouter({

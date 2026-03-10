@@ -1,21 +1,5 @@
 <template>
   <div class="layout">
-<<<<<<< HEAD
-    <header>
-      <nav>
-        <router-link to="/">Home</router-link>
-        <router-link to="/about">About</router-link>
-        <router-link to="/polls">Polls</router-link>
-        <template v-if="authStore.user">
-          <router-link v-if="authStore.userProfile?.role === 'admin'" to="/admin">Admin</router-link>
-          <span>Welcome, {{ authStore.userProfile?.name || authStore.user.email }}</span>
-          <button @click="handleLogout">Logout</button>
-        </template>
-        <template v-else>
-          <router-link to="/login">Login</router-link>
-          <router-link to="/register">Register</router-link>
-        </template>
-=======
     <!-- Navbar -->
     <header :class="{ 'scrolled': isScrolled }">
       <nav class="navbar">
@@ -40,6 +24,7 @@
             <li><router-link to="/club" @click="closeMenu">Club</router-link></li>
             <li><router-link to="/chat" @click="closeMenu">Chat</router-link></li>
             <li><router-link to="/events" @click="closeMenu">Events</router-link></li>
+            <li><router-link to="/polls" @click="closeMenu">Polls</router-link></li>
             <li><router-link to="/dashboard" @click="closeMenu">Dashboard</router-link></li>
             <li><router-link to="/notifications" @click="closeMenu">Notifications</router-link></li>
             <li><router-link to="/profile" @click="closeMenu">Profile</router-link></li>
@@ -56,7 +41,6 @@
             <li><router-link to="/register" @click="closeMenu">Register</router-link></li>
           </template>
         </ul>
->>>>>>> 3fb979e6ebe1c4a9bd571211a17d8452fcdd37ca
       </nav>
     </header>
 
