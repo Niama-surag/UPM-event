@@ -25,6 +25,9 @@ const routes = [
       { path: 'about', name: 'about', component: AboutView },
       { path: 'login', name: 'login', component: LoginView },
       { path: 'register', name: 'register', component: RegisterView },
+      // 👇 ROUTE POUR CREATE EVENT VIEW (ajoutée)
+      { path: 'create', name: 'create', component: () => import('@/views/CreateEventView.vue'), meta: { requiresAuth: true } },
+      // 👆
       { path: 'profile', name: 'profile', component: ProfileView, meta: { requiresAuth: true } },
       { path: 'admin', name: 'admin', component: AdminDashboard, meta: { requiresAdmin: true } },
       { path: 'etudiant', name: 'etudiant', component: EspaceEtudiant, meta: { requiresAuth: true } },
