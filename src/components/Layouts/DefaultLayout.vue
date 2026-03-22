@@ -20,7 +20,7 @@
 
           <!-- Authenticated links -->
           <template v-if="authStore.user">
-            <li><router-link to="/etudiant" @click="closeMenu">Étudiant</router-link></li>
+            <li><router-link to="/my-events">My Events</router-link></li>
             <li><router-link to="/club" @click="closeMenu">Club</router-link></li>
             <li><router-link to="/chat" @click="closeMenu">Chat</router-link></li>
             <li><router-link to="/events" @click="closeMenu">Events</router-link></li>

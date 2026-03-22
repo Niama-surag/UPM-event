@@ -9,7 +9,6 @@ import RegisterView from '@/views/RegisterView.vue'
 import ProfileView from '@/views/ProfileView.vue'
 import AdminDashboard from '@/views/AdminDashboard.vue'
 import PollsView from '../views/PollsView.vue'
-import EspaceEtudiant from '@/views/EspaceEtudiant.vue'
 import EspaceClub from '@/views/EspaceClub.vue'
 import EspaceChat from '@/views/EspaceChat.vue'
 import EspaceEvents from '@/views/EspaceEvents.vue'
@@ -30,12 +29,13 @@ const routes = [
       // 👆
       { path: 'profile', name: 'profile', component: ProfileView, meta: { requiresAuth: true } },
       { path: 'admin', name: 'admin', component: AdminDashboard, meta: { requiresAdmin: true } },
-      { path: 'etudiant', name: 'etudiant', component: EspaceEtudiant, meta: { requiresAuth: true } },
+      
       { path: 'club', name: 'club', component: EspaceClub, meta: { requiresAuth: true } },
       { path: 'chat', name: 'chat', component: EspaceChat, meta: { requiresAuth: true } },
       { path: 'events', name: 'events', component: EspaceEvents, meta: { requiresAuth: true } },
       { path: 'dashboard', name: 'dashboard', component: EspaceDashboard, meta: { requiresAuth: true } },
       { path: 'notifications', name: 'notifications', component: EspaceNotification, meta: { requiresAuth: true } },
+      {path: '/my-events', name: 'myEvents', component: () => import('@/views/myevents.vue'), meta: { requiresAuth: true }},
       { path: 'polls', name: 'polls', component: PollsView }
     ]
   }
