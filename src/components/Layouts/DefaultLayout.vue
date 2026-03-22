@@ -13,6 +13,7 @@
         <ul class="nav-links" :class="{ open: menuOpen }">
           <li><router-link to="/" class="nav-link" @click="closeMenu"><i class="fas fa-home"></i><span>Home</span></router-link></li>
           <template v-if="authStore.user">
+<<<<<<< HEAD
             <li><router-link to="/explore" class="nav-link" @click="closeMenu"><i class="fas fa-compass"></i><span>Explore</span></router-link></li>
             <li><router-link to="/polls" class="nav-link" @click="closeMenu"><i class="fas fa-poll"></i><span>Polls</span></router-link></li>
             <li>
@@ -23,6 +24,19 @@
             </li>
             <li v-if="authStore.userProfile?.role === 'admin'">
               <router-link to="/admin" class="nav-link admin-link" @click="closeMenu"><i class="fas fa-shield-alt"></i><span>Admin</span></router-link>
+=======
+            <li><router-link to="/my-events">My Events</router-link></li>
+            <li><router-link to="/club" @click="closeMenu">Club</router-link></li>
+            <li><router-link to="/chat" @click="closeMenu">Chat</router-link></li>
+            <li><router-link to="/events" @click="closeMenu">Events</router-link></li>
+            <li><router-link to="/polls" @click="closeMenu">Polls</router-link></li>
+            <li><router-link to="/dashboard" @click="closeMenu">Dashboard</router-link></li>
+            <li><router-link to="/notifications" @click="closeMenu">Notifications</router-link></li>
+            <li><router-link to="/profile" @click="closeMenu">Profile</router-link></li>
+            <!-- Admin link (only if admin) -->
+            <li v-if="authStore.userProfile?.role === 'admin'">
+              <router-link to="/admin" @click="closeMenu">Admin</router-link>
+>>>>>>> 9aa98d2f5cd44d617e5898c8d55ac524f2881dde
             </li>
           </template>
           <template v-else>
