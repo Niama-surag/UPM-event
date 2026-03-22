@@ -45,8 +45,8 @@ const fetchData = async () => {
   const clubsSnap = await getDocs(collection(db, 'clubs'))
   clubs.value = clubsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }))
   // Get user's registrations
-  const regSnap = await getDocs(query(collection(db, 'registrations'), where('userid', '==', authStore.user.uid)))
-  myRegistrations.value = regSnap.docs.map(doc => doc.data().eventsid)
+  const regSnap = await getDocs(query(collection(db, 'registrations'), where('userId', '==', authStore.user.uid)))
+  myRegistrations.value = regSnap.docs.map(doc => doc.data().eventsId)
   loading.value = false
 }
 
@@ -75,8 +75,8 @@ const isRegistered = (eventId) => myRegistrations.value.includes(eventId)
 const registerForEvent = async (eventId) => {
   try {
     await addDoc(collection(db, 'registrations'), {
-      userid: authStore.user.uid,
-      eventsid: eventId,
+      userId: authStore.user.uid,
+      eventsId: eventId,
       registeredAt: new Date().toISOString()
     })
     myRegistrations.value.push(eventId)
