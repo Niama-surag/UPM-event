@@ -25,8 +25,10 @@ const routes = [
       { path: 'about', name: 'about', component: AboutView },
       { path: 'login', name: 'login', component: LoginView },
       { path: 'register', name: 'register', component: RegisterView },
-      // 👇 ROUTE POUR CREATE EVENT VIEW (ajoutée)
+      // Route pour créer un événement
       { path: 'create', name: 'create', component: () => import('@/views/CreateEventView.vue'), meta: { requiresAuth: true } },
+      // 👇 NOUVELLE ROUTE POUR LE DÉTAIL D'UN ÉVÉNEMENT
+      { path: 'event/:id', name: 'event-detail', component: () => import('@/views/EventDetailView.vue') },
       // 👆
       { path: 'profile', name: 'profile', component: ProfileView, meta: { requiresAuth: true } },
       { path: 'admin', name: 'admin', component: AdminDashboard, meta: { requiresAdmin: true } },
