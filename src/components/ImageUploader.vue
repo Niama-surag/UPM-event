@@ -31,9 +31,9 @@ const emit = defineEmits(['update:modelValue']);
 // URL de l'image (réactive)
 const imageUrl = ref(props.modelValue || '');
 
-// CONFIGURATION CLOUDINARY - À MODIFIER !
-const CLOUD_NAME = 'delbtkoa4';  // Remplacez par votre cloud name
-const UPLOAD_PRESET = 'upm-events-preset';  // À créer dans Cloudinary
+// CONFIGURATION CLOUDINARY
+const CLOUD_NAME = 'delbtkoa4';
+const UPLOAD_PRESET = 'upm-events-preset';
 
 // Fonction pour ouvrir le widget d'upload
 const openWidget = () => {
@@ -50,7 +50,7 @@ const openWidget = () => {
       multiple: false,
       maxFileSize: 5000000,
       resourceType: 'image',
-      folder: 'upm-events'
+      folder: 'UPM-Events'
     },
     (error, result) => {
       if (!error && result && result.event === 'success') {
