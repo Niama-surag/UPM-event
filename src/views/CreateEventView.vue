@@ -36,6 +36,13 @@
           <label>Prix (€) *</label>
           <input type="number" v-model="form.price" min="0" step="0.01" required>
         </div>
+        <div class="field">
+  <label>
+    Fin du vote (poll)
+    <span class="field-hint">(optionnel — laissez vide pour un vote permanent)</span>
+  </label>
+  <input type="datetime-local" v-model="newEvent.pollEnd" />
+</div>
       </div>
       
       <!-- Image Uploader (ton composant) -->

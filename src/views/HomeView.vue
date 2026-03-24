@@ -12,11 +12,7 @@
           <router-link v-if="!authStore.user" to="/register" class="btn-hero-secondary">Create Account</router-link>
         </div>
       </div>
-      <div class="hero-visual">
-        <div class="stat-float stat-1"><span class="stat-num">{{ stats.events }}</span><span class="stat-label">Events</span></div>
-        <div class="stat-float stat-2"><span class="stat-num">{{ stats.clubs }}</span><span class="stat-label">Clubs</span></div>
-        <div class="stat-float stat-3"><span class="stat-num">{{ stats.members }}</span><span class="stat-label">Students</span></div>
-      </div>
+
     </section>
 
     <!-- ===== PERSONALIZED DASHBOARD (logged in) ===== -->
@@ -222,7 +218,7 @@ const formatTime = (ts) => {
 }
 
 
-.hero::before {
+.hero::before { 
   content: '';
   position: absolute;
   top: 0;

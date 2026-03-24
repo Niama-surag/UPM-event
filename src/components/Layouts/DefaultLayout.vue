@@ -11,6 +11,14 @@
           <li><router-link to="/explore" class="nav-link" @click="closeMenu"><i class="fas fa-compass"></i><span>Explore</span></router-link></li>
           <li><router-link to="/polls" class="nav-link" @click="closeMenu"><i class="fas fa-poll"></i><span>Polls</span></router-link></li>
           <li><router-link to="/pathways" class="nav-link" @click="closeMenu"><i class="fas fa-road"></i><span>Pathway Courses</span></router-link></li>
+          
+          <!-- 👈 NOUVEAU : My Events link -->
+          <li v-if="authStore.user">
+            <router-link to="/my-events" class="nav-link" @click="closeMenu">
+              <i class="fas fa-calendar-alt"></i><span>My Events</span>
+            </router-link>
+          </li>
+          
           <template v-if="authStore.user">
             <li>
               <router-link to="/notifications" class="nav-link notif-link" @click="closeMenu">
@@ -33,6 +41,10 @@
                 <div v-if="profileOpen" class="dropdown">
                   <router-link to="/profile" class="dropdown-item" @click="profileOpen = false"><i class="fas fa-user-circle"></i> My Profile</router-link>
                   <router-link to="/etudiant" class="dropdown-item" @click="profileOpen = false"><i class="fas fa-graduation-cap"></i> Student Space</router-link>
+                  <!-- 👈 NOUVEAU : My Events dans le dropdown aussi -->
+                  <router-link to="/my-events" class="dropdown-item" @click="profileOpen = false">
+                    <i class="fas fa-calendar-alt"></i> My Events
+                  </router-link>
                   <button class="dropdown-item" @click="replayTutorial"><i class="fas fa-question-circle"></i> Help / Tutorial</button>
                   <div class="dropdown-divider"></div>
                   <button class="dropdown-item danger" @click="handleLogout"><i class="fas fa-sign-out-alt"></i> Logout</button>
@@ -84,6 +96,8 @@
             <li><router-link to="/explore">Explore</router-link></li>
             <li><router-link to="/polls">Polls</router-link></li>
             <li><router-link to="/pathways">Pathway Courses</router-link></li>
+            <!-- 👈 NOUVEAU : My Events dans le footer -->
+            <li v-if="authStore.user"><router-link to="/my-events">My Events</router-link></li>
             <li v-if="!authStore.user"><router-link to="/login">Sign In</router-link></li>
             <li v-if="authStore.user"><router-link to="/profile">My Profile</router-link></li>
             <li v-if="authStore.isAdmin()"><router-link to="/admin">Admin Dashboard</router-link></li>

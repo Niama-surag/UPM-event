@@ -28,6 +28,7 @@
           :total-votes="totalVotes"
           :has-voted="hasVoted(event.id)"
           :is-active="true"
+          :poll-end="event.pollEnd"
           @vote="vote(event.id)"
         />
       </div>

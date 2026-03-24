@@ -17,7 +17,9 @@ const EspaceNotification = () => import('@/views/EspaceNotification.vue')
 const AdminDashboard     = () => import('@/views/AdminDashboard.vue')
 const EventDetailView    = () => import('@/views/EventDetailView.vue')
 const AboutView          = () => import('@/views/AboutView.vue')
-const CreateEventView    = () => import('@/views/CreateEventView.vue')  // 👈 AJOUTÉ
+const CreateEventView    = () => import('@/views/CreateEventView.vue')
+const MyEvents           = () => import('@/views/MyEvents.vue')           // 👈 NOUVEAU
+const EspaceClub         = () => import('@/views/EspaceClub.vue')         // 👈 NOUVEAU
 
 const routes = [
   {
@@ -26,14 +28,14 @@ const routes = [
     children: [
       // Public
       { path: '',         name: 'home',          component: HomeView },
-      { path: 'about',    name: 'about',          component: AboutView },
-      { path: 'login',    name: 'login',          component: LoginView },
-      { path: 'register', name: 'register',       component: RegisterView },
-     { path: 'create', name: 'create', component: CreateEventView },
-      { path: 'polls',    name: 'polls',          component: PollsView },
+      { path: 'about',    name: 'about',         component: AboutView },
+      { path: 'login',    name: 'login',         component: LoginView },
+      { path: 'register', name: 'register',      component: RegisterView },
+      { path: 'create',   name: 'create',        component: CreateEventView },
+      { path: 'polls',    name: 'polls',         component: PollsView },
 
       // Public pathway browser
-      { path: 'pathways', name: 'pathways',       component: PathwaysView },
+      { path: 'pathways', name: 'pathways',      component: PathwaysView },
 
       // Authenticated
       { path: 'explore',        name: 'explore',        component: ExploreView,        meta: { requiresAuth: true } },
@@ -41,6 +43,12 @@ const routes = [
       { path: 'etudiant',       name: 'etudiant',       component: EspaceEtudiant,     meta: { requiresAuth: true } },
       { path: 'notifications',  name: 'notifications',  component: EspaceNotification, meta: { requiresAuth: true } },
       { path: 'event/:id',      name: 'event-detail',   component: EventDetailView,    meta: { requiresAuth: true } },
+      
+      // 👈 NOUVEAU : My Events page
+      { path: 'my-events',      name: 'my-events',      component: MyEvents,           meta: { requiresAuth: true } },
+      
+      // 👈 NOUVEAU : Club space with ID parameter
+      { path: 'club/:id',       name: 'club-space',     component: EspaceClub,         meta: { requiresAuth: true } },
 
       // Admin
       { path: 'admin', name: 'admin', component: AdminDashboard, meta: { requiresAuth: true, requiresAdmin: true } },

@@ -400,9 +400,9 @@
 
       <!-- Create club -->
       <div class="create-club-section">
-        <button v-if="!showCreateClub && !userClub && !myPendingClub" @click="showCreateClub = true" class="btn-dashed">
-          <i class="fas fa-plus"></i> Create a Club
-        </button>
+        <button v-if="!showCreateClub" @click="showCreateClub = true" class="btn-dashed">
+  <i class="fas fa-plus"></i> Créer un Club
+</button>
         <div v-if="showCreateClub" class="inline-form">
           <h4>Create a New Club</h4>
           <p class="form-hint">⚠️ Your club request will be reviewed by an admin before becoming public.</p>
@@ -699,21 +699,33 @@ const toggleCustomRole = async (uid, roleName) => {
 }
 
 // ── Club actions ──────────────────────────────────────────────
+// In ExploreView.vue, replace the createClub function with:
+
 const createClub = async () => {
   if (!newClub.value.name.trim()) return
   creatingClub.value = true
   try {
+    // Remove the check for existing pending club - allow multiple requests
     await addDoc(collection(db, 'clubs'), {
-      name: newClub.value.name, description: newClub.value.description,
-      leaderId: authStore.user.uid, members: [authStore.user.uid],
-      memberRoles: {}, memberCustomRoles: {}, status: 'pending', createdAt: serverTimestamp()
+      name: newClub.value.name, 
+      description: newClub.value.description,
+      leaderId: authStore.user.uid, 
+      members: [authStore.user.uid],
+      memberRoles: {}, 
+      memberCustomRoles: {}, 
+      status: 'pending', 
+      createdAt: serverTimestamp()
     })
     newClub.value = { name: '', description: '' }
     showCreateClub.value = false
     showToast('Club request submitted! Waiting for admin approval. ⏳', 'success')
-    await fetchClubs(); await fetchUserClubData()
-  } catch (e) { showToast('Error: ' + e.message, 'error') }
-  finally { creatingClub.value = false }
+    await fetchClubs()
+    await fetchUserClubData()
+  } catch (e) { 
+    showToast('Error: ' + e.message, 'error') 
+  } finally { 
+    creatingClub.value = false 
+  }
 }
 
 const joinClub = async (clubId) => {

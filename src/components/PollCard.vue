@@ -22,12 +22,19 @@
     <!-- Body -->
     <div class="card-body">
       <h3>{{ event.title }}</h3>
+      <!-- Dans PollCard.vue — Ajouter après le titre de l'événement -->
+       <div v-if="pollEnd" class="poll-timer" :class="{ urgent: timeLeft < 3600 }">
+  <i class="fas fa-clock"></i>
+  <span v-if="timeLeft > 0">{{ formatTimeLeft(timeLeft) }}</span>
+  <span v-else class="expired-label">Vote terminé</span>
+</div>
       <p>{{ shortDesc(event.description) }}</p>
 
       <!-- Countdown to end -->
       <div v-if="countdown" class="countdown" :class="{ urgent: isUrgent }">
         <i class="fas fa-clock"></i> Ends in {{ countdown }}
       </div>
+
 
       <!-- Progress bar -->
       <div class="vote-progress">
@@ -65,39 +72,36 @@ const props = defineProps({
   totalVotes: { type: Number,  default: 0 },
   hasVoted:   { type: Boolean, default: false },
   isActive:   { type: Boolean, default: false },
+  pollEnd:    { type: [Object, String, null], default: null },
 })
 
 defineEmits(['vote'])
 
 // ── Countdown timer ───────────────────────────────────────────
-const now = ref(new Date())
-let timer
 
-onMounted(() => { timer = setInterval(() => { now.value = new Date() }, 1000) })
-onUnmounted(() => clearInterval(timer))
+const now = ref(Date.now())
+let timer = null
 
-const endDate = computed(() => {
-  const d = props.event.pollEnd || props.event.endDate || props.event.endTime
-  if (!d) return null
-  return d.toDate ? d.toDate() : new Date(d)
+onMounted(() => { timer = setInterval(() => { now.value = Date.now() }, 1000) })
+onUnmounted(() => { if (timer) clearInterval(timer) })
+
+const timeLeft = computed(() => {
+  if (!props.pollEnd) return Infinity
+  const end = props.pollEnd?.toDate ? props.pollEnd.toDate() : new Date(props.pollEnd)
+  return Math.max(0, Math.floor((end.getTime() - now.value) / 1000))
 })
 
-const countdown = computed(() => {
-  if (!endDate.value || !props.isActive) return null
-  const diff = endDate.value - now.value
-  if (diff <= 0) return null
-
-  const s = Math.floor(diff / 1000)
-  const m = Math.floor(s / 60)
-  const h = Math.floor(m / 60)
-  const d = Math.floor(h / 24)
-
-  if (d > 0)  return `${d}d ${h % 24}h`
-  if (h > 0)  return `${h}h ${m % 60}m`
-  if (m > 0)  return `${m}m ${s % 60}s`
-  return `${s}s`
-})
-
+const formatTimeLeft = seconds => {
+  if (seconds === Infinity) return ''
+  const d = Math.floor(seconds / 86400)
+  const h = Math.floor((seconds % 86400) / 3600)
+  const m = Math.floor((seconds % 3600) / 60)
+  const s = seconds % 60
+  if (d > 0) return `${d}j ${h}h restant`
+  if (h > 0) return `${h}h ${m}m restant`
+  if (m > 0) return `${m}m ${s}s restant`
+  return `${s}s restant`
+}
 const isUrgent = computed(() => {
   if (!endDate.value) return false
   return (endDate.value - now.value) < 3600000 // < 1 hour
@@ -174,4 +178,24 @@ const shortDesc = (d) => d ? (d.length > 75 ? d.slice(0, 75) + '…' : d) : ''
 .vote-btn:hover:not(:disabled) { background: #1d4ed8; }
 .vote-btn.voted   { background: #10b981; cursor: default; }
 .vote-btn.disabled { background: var(--bg-muted, #e2e8f0); color: var(--text-muted, #64748b); cursor: not-allowed; }
+/* Dans PollCard.vue <style scoped> */
+.poll-timer {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #059669;
+  background: #ecfdf5;
+  padding: 0.2rem 0.6rem;
+  border-radius: 20px;
+  margin-top: 0.5rem;
+}
+.poll-timer.urgent {
+  color: #dc2626;
+  background: #fef2f2;
+  animation: pulse-timer 1s infinite;
+}
+.expired-label { color: #94a3b8; }
+@keyframes pulse-timer { 0%,100% { opacity:1; } 50% { opacity:0.6; } }
 </style>

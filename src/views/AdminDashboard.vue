@@ -319,7 +319,8 @@ import { useSettingsStore } from '@/stores/settings'
 import { db } from '@/services/firebase'
 import { collection, getDocs, doc, getDoc, updateDoc, deleteDoc, serverTimestamp } from 'firebase/firestore'
 import RoleBadge from '@/components/ui/RoleBadge.vue'
-
+import { useNotificationsStore } from '@/stores/notifications'
+const notifStore = useNotificationsStore()
 const authStore    = useAuthStore()
 const settingsStore = useSettingsStore()
 const defaultAvatar = 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y'
@@ -422,6 +423,10 @@ const approveClub = async (club) => {
   try {
     await updateDoc(doc(db, 'clubs', club.id), { status: 'approved', approvedAt: serverTimestamp(), approvedBy: authStore.user.uid, [`memberRoles.${club.leaderId}`]: 'club_admin' })
     club.status = 'approved'
+    // Notifier le créateur du club
+await notifStore.notifyClubApproved(club.leaderId, club.name)
+// Notifier tous les users qu'un nouveau club est disponible
+await notifStore.notifyNewClub(club.name, club.leaderId)
     showToast(`Club "${club.name}" approved ✅`, 'success')
   } catch (e) { showToast('Error: ' + e.message, 'error') }
   finally { club._loading = null }
@@ -432,6 +437,11 @@ const approveEvent = async (event) => {
   try {
     await updateDoc(doc(db, 'events', event.id), { status: 'approved', approvedAt: serverTimestamp(), approvedBy: authStore.user.uid })
     event.status = 'approved'
+    // Notifier le créateur de l'événement
+await notifStore.notifyEventApproved(event.createdBy || event.leaderId, event.title)
+// Récupérer le nom du club pour la notification globale
+const clubN = event.clubName || 'votre club'
+await notifStore.notifyNewEvent(event.title, clubN, event.createdBy)
     showToast(`Event "${event.title}" approved ✅`, 'success')
   } catch (e) { showToast('Error: ' + e.message, 'error') }
   finally { event._loading = null }
