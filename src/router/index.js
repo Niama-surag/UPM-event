@@ -29,7 +29,7 @@ const routes = [
       { path: 'about',    name: 'about',          component: AboutView },
       { path: 'login',    name: 'login',          component: LoginView },
       { path: 'register', name: 'register',       component: RegisterView },
-      { path: 'create',   name: 'create',         component: CreateEventView, meta: { requiresAuth: true } }, // 👈 AJOUTÉ
+     { path: 'create', name: 'create', component: CreateEventView },
       { path: 'polls',    name: 'polls',          component: PollsView },
 
       // Public pathway browser
