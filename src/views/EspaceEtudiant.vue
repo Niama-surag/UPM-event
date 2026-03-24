@@ -96,8 +96,4 @@ h1 {
     font-size: 0.85rem;
   }
 }
-<<<<<<< HEAD
 </style>
-=======
-</style> 
->>>>>>> 1ead882b00a0c0f5379cafac85f95deff58efc13
