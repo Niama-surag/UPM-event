@@ -54,7 +54,7 @@
       
       <!-- Messages -->
       <p v-if="error" class="error">{{ error }}</p>
-      <p v-if="success" class="success">✅ Événement créé !</p>
+      <p v-if="success" class="success">✅ Événement créé avec succès !</p>
     </form>
   </div>
 </template>
@@ -121,6 +121,12 @@ const submitForm = async () => {
   padding: 20px;
 }
 
+h1 {
+  text-align: center;
+  color: #333;
+  margin-bottom: 30px;
+}
+
 .event-form {
   background: white;
   padding: 30px;
@@ -142,6 +148,7 @@ label {
   display: block;
   margin-bottom: 5px;
   font-weight: bold;
+  color: #333;
 }
 
 input, select, textarea {
@@ -149,6 +156,13 @@ input, select, textarea {
   padding: 10px;
   border: 1px solid #ddd;
   border-radius: 4px;
+  font-size: 16px;
+  font-family: inherit;
+}
+
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: #42b983;
 }
 
 button {
@@ -158,13 +172,31 @@ button {
   color: white;
   border: none;
   border-radius: 4px;
+  font-size: 16px;
+  font-weight: bold;
   cursor: pointer;
+  transition: background 0.3s;
+}
+
+button:hover:not(:disabled) {
+  background: #3aa876;
+}
+
+button:disabled {
+  background: #ccc;
+  cursor: not-allowed;
 }
 
 .error {
   color: #ff4444;
+  font-size: 0.9em;
+  margin-top: 5px;
 }
+
 .success {
   color: #4caf50;
+  font-size: 0.9em;
+  margin-top: 10px;
+  text-align: center;
 }
 </style>

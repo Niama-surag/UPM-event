@@ -27,7 +27,6 @@
       </div>
 
       <div class="dashboard-grid">
-        <!-- Stat cards -->
         <div class="dash-card stat-card" v-for="card in dashCards" :key="card.label">
           <div class="dash-card-icon" :style="{ background: card.bg }">
             <i :class="card.icon" :style="{ color: card.color }"></i>
@@ -60,35 +59,16 @@
       <div v-else-if="upcomingEvents.length === 0" class="empty-state">
         <div class="empty-icon">📭</div>
         <p>No upcoming events yet.</p>
-        <router-link to="/explore" class="btn-outline">Browse all events</router-link>
+        <router-link to="/create" class="btn-outline">Create first event</router-link>
       </div>
 
       <div v-else class="events-grid">
-        <div
+        <!-- UTILISATION DE TON COMPOSANT EVENTCARD -->
+        <EventCard
           v-for="event in upcomingEvents"
           :key="event.id"
-          class="event-card"
-          @click="$router.push(`/event/${event.id}`)"
-        >
-          <div class="event-img-wrap">
-            <img
-              :src="event.imageURL || 'https://via.placeholder.com/400x200?text=' + event.title"
-              :alt="event.title"
-              @error="$event.target.src='https://via.placeholder.com/400x200?text=UPM+Event'"
-            />
-            <span class="event-badge" :class="event.type">
-              {{ event.type === 'free' ? 'Free' : event.price + '€' }}
-            </span>
-          </div>
-          <div class="event-body">
-            <h3>{{ event.title }}</h3>
-            <p class="event-desc">{{ shortDesc(event.description) }}</p>
-            <div class="event-meta">
-              <span><i class="fas fa-calendar-alt"></i> {{ formatDate(event.startTime) }}</span>
-              <span><i class="fas fa-map-marker-alt"></i> {{ event.location || 'TBD' }}</span>
-            </div>
-          </div>
-        </div>
+          :event="event"
+        />
       </div>
     </section>
 
@@ -144,6 +124,7 @@ import { ref, computed, onMounted } from 'vue'
 import { collection, getDocs, query, where, orderBy, limit } from 'firebase/firestore'
 import { db } from '@/services/firebase'
 import { useAuthStore } from '@/stores/auth'
+import EventCard from '@/components/EventCard.vue'
 
 const authStore = useAuthStore()
 
@@ -172,7 +153,7 @@ const dashCards = computed(() => [
 ])
 
 onMounted(async () => {
-  // Fetch upcoming events (limit 8)
+  // Fetch upcoming events (limit 8) depuis la collection "events"
   try {
     const snap = await getDocs(collection(db, 'events'))
     const all = snap.docs.map(d => ({ id: d.id, ...d.data() }))
@@ -210,17 +191,6 @@ onMounted(async () => {
     } catch (e) { console.error(e) }
   }
 })
-
-const shortDesc = (desc) => {
-  if (!desc) return ''
-  return desc.length > 70 ? desc.slice(0, 70) + '…' : desc
-}
-
-const formatDate = (ts) => {
-  if (!ts) return ''
-  const d = ts.toDate ? ts.toDate() : new Date(ts)
-  return d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })
-}
 
 const formatTime = (ts) => {
   if (!ts) return ''
@@ -324,29 +294,11 @@ const formatTime = (ts) => {
 .events-grid {
   display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1.25rem;
 }
-.event-card {
-  background: white; border-radius: 14px; overflow: hidden; cursor: pointer;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.07); transition: transform 0.2s, box-shadow 0.2s;
-}
-.event-card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,0.12); }
-.event-img-wrap { position: relative; height: 160px; background: #f1f5f9; overflow: hidden; }
-.event-img-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.3s; }
-.event-card:hover .event-img-wrap img { transform: scale(1.04); }
-.event-badge {
-  position: absolute; top: 10px; right: 10px;
-  padding: 0.25rem 0.65rem; border-radius: 20px; font-size: 0.72rem; font-weight: 700; color: white;
-}
-.event-badge.free { background: #10b981; }
-.event-badge.paid { background: #f59e0b; color: #1f2937; }
-.event-body { padding: 1rem; }
-.event-body h3 { margin: 0 0 0.4rem; font-size: 0.95rem; font-weight: 700; color: #1e293b; }
-.event-desc { font-size: 0.82rem; color: #64748b; margin: 0 0 0.75rem; line-height: 1.5; }
-.event-meta { display: flex; flex-direction: column; gap: 0.3rem; }
-.event-meta span { font-size: 0.78rem; color: #94a3b8; display: flex; align-items: center; gap: 0.35rem; }
-.event-meta i { color: #2563eb; width: 12px; }
 
 /* Skeleton */
 .event-card-skeleton { background: white; border-radius: 14px; overflow: hidden; }
+.skeleton { background: #e2e8f0; animation: pulse 1.5s infinite; }
+@keyframes pulse { 0% { opacity: 0.6; } 50% { opacity: 1; } 100% { opacity: 0.6; } }
 
 /* Clubs row */
 .clubs-row { display: flex; gap: 0.75rem; flex-wrap: wrap; }
