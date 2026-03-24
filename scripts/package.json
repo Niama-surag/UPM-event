@@ -1,0 +1,12 @@
+{
+  "name": "upm-admin-seed",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "One-time admin seeding script for UPM-Event",
+  "scripts": {
+    "seed": "node scripts/seedAdmins.js"
+  },
+  "dependencies": {
+    "firebase": "^10.0.0"
+  }
+}

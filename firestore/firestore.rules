@@ -1,0 +1,157 @@
+// firestore/firestore.rules
+// ─────────────────────────────────────────────────────────────
+// CRITICAL: These rules are the REAL security layer.
+// Frontend role checks (v-if, router guards) are UX only —
+// anyone can bypass JavaScript. Firestore rules run on Google's
+// servers and CANNOT be bypassed.
+//
+// HOW TO DEPLOY:
+//   firebase deploy --only firestore:rules
+// ─────────────────────────────────────────────────────────────
+
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── Helper functions ──────────────────────────────────────
+
+    // Is the request from a logged-in user?
+    function isAuth() {
+      return request.auth != null;
+    }
+
+    // Is the current user an admin?
+    // WHY read from Firestore instead of custom claims?
+    //   → Simpler setup. For production at scale, use Firebase
+    //     Custom Claims (set via Admin SDK) which are in the JWT
+    //     and don't require a Firestore read on every rule check.
+    function isAdmin() {
+      return isAuth() &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // Is this the owner of the document?
+    function isOwner(uid) {
+      return isAuth() && request.auth.uid == uid;
+    }
+
+    // ── users collection ──────────────────────────────────────
+    match /users/{userId} {
+      // Anyone logged in can read user profiles (for member lists, etc.)
+      allow read: if isAuth();
+
+      // Users can create their own profile on registration
+      allow create: if isOwner(userId)
+        && request.resource.data.role == 'user';  // ← PREVENTS self-promoting to admin
+
+      // Users can update their own profile BUT cannot change their role
+      allow update: if isOwner(userId)
+        && request.resource.data.role == resource.data.role  // role cannot change
+        || isAdmin();  // admins can change anything, including role
+
+      // Only admins can delete user profiles
+      allow delete: if isAdmin();
+    }
+
+    // ── clubs collection ──────────────────────────────────────
+    match /clubs/{clubId} {
+      // Anyone (even unauthenticated) can read APPROVED clubs
+      allow read: if resource.data.status == 'approved'
+        || isAdmin()
+        || (isAuth() && resource.data.leaderId == request.auth.uid)
+        || (isAuth() && request.auth.uid in resource.data.members);
+
+      // Any logged-in user can create a club BUT:
+      //   - status MUST be "pending" (cannot self-approve)
+      //   - leaderId MUST be the creator's own UID
+      allow create: if isAuth()
+        && request.resource.data.status == 'pending'
+        && request.resource.data.leaderId == request.auth.uid;
+
+      // Updates: club members can update club info, but cannot change status
+      // Admins can change anything including status
+      allow update: if isAdmin()
+        || (isAuth()
+            && request.auth.uid in resource.data.members
+            && request.resource.data.status == resource.data.status);  // non-admins cannot change status
+
+      // Only admins can delete clubs
+      allow delete: if isAdmin();
+    }
+
+    // ── events collection ─────────────────────────────────────
+    match /events/{eventId} {
+      // Only APPROVED events are public
+      allow read: if resource.data.status == 'approved'
+        || isAdmin()
+        || (isAuth() && resource.data.createdBy == request.auth.uid);
+
+      // Any logged-in user can create an event BUT status MUST be "pending"
+      allow create: if isAuth()
+        && request.resource.data.status == 'pending'
+        && request.resource.data.createdBy == request.auth.uid;
+
+      // Event creator can edit details but NOT status
+      // Admins can change status (approve/reject)
+      allow update: if isAdmin()
+        || (isAuth()
+            && resource.data.createdBy == request.auth.uid
+            && request.resource.data.status == resource.data.status);
+
+      allow delete: if isAdmin()
+        || (isAuth() && resource.data.createdBy == request.auth.uid);
+    }
+
+    // ── registrations collection ──────────────────────────────
+    match /registrations/{regId} {
+      // Users can only see their own registrations
+      allow read: if isAuth() && resource.data.userid == request.auth.uid
+        || isAdmin();
+
+      // Users can register for events (no status check here — event read rule handles visibility)
+      allow create: if isAuth() && request.resource.data.userid == request.auth.uid;
+
+      allow delete: if isAuth() && resource.data.userid == request.auth.uid
+        || isAdmin();
+    }
+
+    // ── clubRequests collection ───────────────────────────────
+    match /clubRequests/{reqId} {
+      allow read: if isAuth() && resource.data.userId == request.auth.uid
+        || isAdmin();
+
+      allow create: if isAuth()
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.status == 'pending';
+
+      // Only admins can update (approve/reject) join requests
+      allow update: if isAdmin();
+
+      allow delete: if isAdmin();
+    }
+
+    // ── notifications collection ──────────────────────────────
+    match /notifications/{notifId} {
+      allow read: if isAuth() && (
+        resource.data.userId == request.auth.uid || resource.data.global == true
+      );
+      allow create: if isAuth();
+      allow update: if isAuth() && resource.data.userId == request.auth.uid;
+      allow delete: if isAdmin();
+    }
+
+    // ── messages (chat) collection ────────────────────────────
+    match /messages/{msgId} {
+      allow read:   if isAuth();
+      allow create: if isAuth() && request.resource.data.userId == request.auth.uid;
+      allow delete: if isAdmin();
+    }
+
+    // ── Votes collection ──────────────────────────────────────
+    match /Votes/{voteId} {
+      allow read:   if isAuth();
+      allow create: if isAuth() && request.resource.data.userid == request.auth.uid;
+    }
+  }
+}
