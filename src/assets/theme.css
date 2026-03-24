@@ -1,0 +1,143 @@
+/* ════════════════════════════════════════════════════════════
+   DARK / LIGHT MODE CSS VARIABLES
+   Add this to src/assets/main.css  (or import in App.vue)
+   ════════════════════════════════════════════════════════════ */
+
+/* ── Light mode (default) ─────────────────────────────────── */
+:root,
+[data-theme='light'] {
+  /* Backgrounds */
+  --bg-base:    #f8fafc;
+  --bg-surface: #ffffff;
+  --bg-subtle:  #f1f5f9;
+  --bg-muted:   #e2e8f0;
+
+  /* Text */
+  --text-base:  #1e293b;
+  --text-muted: #64748b;
+  --text-faint: #94a3b8;
+
+  /* Borders */
+  --border:     #e2e8f0;
+  --border-focus: #2563eb;
+
+  /* Brand */
+  --primary:    #2563eb;
+  --primary-bg: #eff6ff;
+
+  /* Status */
+  --success:    #059669;
+  --error:      #dc2626;
+  --warning:    #d97706;
+
+  /* Shadows */
+  --shadow-sm:  0 1px 4px rgba(0,0,0,0.07);
+  --shadow-md:  0 4px 16px rgba(0,0,0,0.1);
+  --shadow-lg:  0 8px 32px rgba(0,0,0,0.12);
+
+  color-scheme: light;
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+/* ── Dark mode ───────────────────────────────────────────── */
+[data-theme='dark'] {
+  /* Backgrounds */
+  --bg-base:    #0f172a;
+  --bg-surface: #1e293b;
+  --bg-subtle:  #1e293b;
+  --bg-muted:   #334155;
+
+  /* Text */
+  --text-base:  #f1f5f9;
+  --text-muted: #94a3b8;
+  --text-faint: #64748b;
+
+  /* Borders */
+  --border:     #334155;
+  --border-focus: #3b82f6;
+
+  /* Brand */
+  --primary:    #3b82f6;
+  --primary-bg: #1e3a5f;
+
+  /* Status */
+  --success:    #10b981;
+  --error:      #f87171;
+  --warning:    #fbbf24;
+
+  /* Shadows */
+  --shadow-sm:  0 1px 4px rgba(0,0,0,0.3);
+  --shadow-md:  0 4px 16px rgba(0,0,0,0.4);
+  --shadow-lg:  0 8px 32px rgba(0,0,0,0.5);
+
+  color-scheme: dark;
+}
+
+/* ── Apply variables globally ────────────────────────────── */
+body {
+  background-color: var(--bg-base);
+  color: var(--text-base);
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+/* Common dark-mode utility overrides */
+[data-theme='dark'] .card,
+[data-theme='dark'] .event-card,
+[data-theme='dark'] .club-card,
+[data-theme='dark'] .stat-card,
+[data-theme='dark'] .form-card,
+[data-theme='dark'] .dash-card,
+[data-theme='dark'] .request-card,
+[data-theme='dark'] .my-club-panel,
+[data-theme='dark'] .register-card,
+[data-theme='dark'] .admin-table,
+[data-theme='dark'] .login-card,
+[data-theme='dark'] .inline-form,
+[data-theme='dark'] .pathway-editor,
+[data-theme='dark'] .pathways-sidebar,
+[data-theme='dark'] .player-card,
+[data-theme='dark'] .chat-sidebar {
+  background: var(--bg-surface) !important;
+  border-color: var(--border) !important;
+  color: var(--text-base) !important;
+}
+
+[data-theme='dark'] header {
+  background: rgba(15, 23, 42, 0.92) !important;
+  border-bottom-color: var(--border) !important;
+}
+
+[data-theme='dark'] input,
+[data-theme='dark'] select,
+[data-theme='dark'] textarea {
+  background: var(--bg-base) !important;
+  border-color: var(--border) !important;
+  color: var(--text-base) !important;
+}
+
+[data-theme='dark'] input:focus,
+[data-theme='dark'] select:focus,
+[data-theme='dark'] textarea:focus {
+  border-color: var(--border-focus) !important;
+  box-shadow: 0 0 0 3px rgba(59,130,246,0.2) !important;
+}
+
+[data-theme='dark'] .nav-link { color: var(--text-muted) !important; }
+[data-theme='dark'] .nav-link:hover { background: var(--bg-muted) !important; color: var(--text-base) !important; }
+[data-theme='dark'] .nav-link.router-link-active { background: var(--primary-bg) !important; color: var(--primary) !important; }
+
+[data-theme='dark'] .dropdown { background: var(--bg-surface) !important; border-color: var(--border) !important; }
+[data-theme='dark'] .dropdown-item { color: var(--text-muted) !important; }
+[data-theme='dark'] .dropdown-item:hover { background: var(--bg-muted) !important; }
+[data-theme='dark'] .dropdown-divider { background: var(--border) !important; }
+
+[data-theme='dark'] table th { background: var(--bg-subtle) !important; }
+[data-theme='dark'] table td { border-color: var(--border) !important; color: var(--text-base) !important; }
+
+[data-theme='dark'] .site-footer { background: #020617 !important; }
+
+/* ── Skeleton loading dark mode ───────────────────────────── */
+[data-theme='dark'] .skeleton {
+  background: linear-gradient(90deg, #1e293b 25%, #334155 50%, #1e293b 75%) !important;
+  background-size: 200% 100% !important;
+}

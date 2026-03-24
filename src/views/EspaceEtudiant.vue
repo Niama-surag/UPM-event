@@ -1,4 +1,4 @@
- <template>
+<template>
   <div class="etudiant-space">
     <h1>Student Space</h1>
     <div class="tabs">

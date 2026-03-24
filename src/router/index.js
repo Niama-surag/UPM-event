@@ -2,9 +2,9 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import DefaultLayout from '@/components/Layouts/DefaultLayout.vue'
-import HomeView from '@/views/HomeView.vue'
-import AboutView from '@/views/AboutView.vue'
-import LoginView from '@/views/LoginView.vue'
+
+import HomeView    from '@/views/HomeView.vue'
+import LoginView   from '@/views/LoginView.vue'
 import RegisterView from '@/views/RegisterView.vue'
 import ProfileView from '@/views/ProfileView.vue'
 import AdminDashboard from '@/views/AdminDashboard.vue'
@@ -44,17 +44,37 @@ const routes = [
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
-  routes
+  routes,
+  scrollBehavior: () => ({ top: 0, behavior: 'smooth' })
 })
 
-router.beforeEach((to, from, next) => {
+// ── Navigation guard ──────────────────────────────────────────
+router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore()
-  const loggedIn = authStore.user
-  if (to.meta.requiresAuth && !loggedIn) return next({ name: 'login', query: { redirect: to.fullPath } })
+
+  // Wait for Firebase auth to resolve on cold start
+  // WHY: Hard refresh causes a race — auth isn't resolved yet when guard fires
+  if (authStore.loading) {
+    await new Promise((resolve) => {
+      const timer = setInterval(() => {
+        if (!authStore.loading) { clearInterval(timer); resolve() }
+      }, 50)
+      // Safety timeout after 3s
+      setTimeout(() => { clearInterval(timer); resolve() }, 3000)
+    })
+  }
+
+  const loggedIn = !!authStore.user
+
+  if (to.meta.requiresAuth && !loggedIn) {
+    return next({ name: 'login', query: { redirect: to.fullPath } })
+  }
+
   if (to.meta.requiresAdmin) {
     if (!loggedIn) return next({ name: 'login' })
     if (authStore.userProfile?.role !== 'admin') return next({ name: 'home' })
   }
+
   next()
 })
 

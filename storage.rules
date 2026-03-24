@@ -1,0 +1,122 @@
+// ════════════════════════════════════════════════════════════
+// FIREBASE STORAGE RULES (storage.rules)
+// WHY these specific rules?
+//   → Users can only write to their own avatar folder
+//   → Club images scoped to club path
+//   → Public reads for all images (CDN friendly)
+//   → 5MB file size limit enforced at rule level
+// ════════════════════════════════════════════════════════════
+
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    // ── Helpers ──────────────────────────────────────────────
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    function isOwner(uid) {
+      return request.auth.uid == uid;
+    }
+    function isValidImage() {
+      return request.resource.contentType.matches('image/.*')
+          && request.resource.size < 5 * 1024 * 1024;   // 5MB limit
+    }
+    function isValidMedia() {
+      return (request.resource.contentType.matches('image/.*')
+           || request.resource.contentType.matches('video/.*'))
+          && request.resource.size < 50 * 1024 * 1024;   // 50MB limit
+    }
+
+    // ── User avatars ──────────────────────────────────────────
+    // Path: avatars/{userId}/{filename}
+    match /avatars/{userId}/{allPaths=**} {
+      allow read:  if true;               // Public reads
+      allow write: if isAuthenticated()
+                   && isOwner(userId)
+                   && isValidImage();
+    }
+
+    // ── Event images ──────────────────────────────────────────
+    // Path: events/{eventId}/{filename}
+    match /events/{eventId}/{allPaths=**} {
+      allow read: if true;
+      allow write: if isAuthenticated() && isValidImage();
+    }
+
+    // ── Club images ───────────────────────────────────────────
+    // Path: clubs/{clubId}/{filename}
+    match /clubs/{clubId}/{allPaths=**} {
+      allow read: if true;
+      allow write: if isAuthenticated() && isValidImage();
+    }
+
+    // ── Site-wide settings (admin only) ──────────────────────
+    // Path: site/{filename}
+    match /site/{allPaths=**} {
+      allow read:  if true;
+      allow write: if isAuthenticated() && isValidMedia();
+      // Note: Add admin check via custom claims for stricter control:
+      // && request.auth.token.role == 'admin'
+    }
+  }
+}
+
+
+// ════════════════════════════════════════════════════════════
+// DEBUGGING GUIDE: Why image uploads fail
+// ════════════════════════════════════════════════════════════
+
+/*
+COMMON ERRORS AND FIXES:
+
+1. storage/unauthorized (403)
+   → Storage rules are blocking the write
+   → Check: firebase.storage rules match the path you're uploading to
+   → Check: user is authenticated (auth.currentUser is not null)
+   → Check: file matches contentType rule (image/*)
+   → Fix: Deploy updated rules with: firebase deploy --only storage
+
+2. storage/object-not-found (404) on getDownloadURL
+   → Upload task succeeded but ref was wrong
+   → Check: the task.snapshot.ref is used, NOT the storageRef directly
+   → Fix: await getDownloadURL(task.snapshot.ref) (not the original sRef)
+
+3. CORS error in browser
+   → Firebase Storage requires CORS to be configured for web
+   → Fix: set cors on your bucket via gsutil:
+     gsutil cors set cors.json gs://YOUR_BUCKET_NAME
+   cors.json content:
+   [{"origin": ["*"], "method": ["GET"], "maxAgeSeconds": 3600}]
+
+4. Upload succeeds but image doesn't reload
+   → The img src still points to old URL or empty string
+   → Fix: after upload, explicitly set authStore.userProfile.photoURL
+     to the new URL so Vue reactivity triggers re-render
+
+5. "Cannot read property 'size' of null"
+   → File input returned null (user cancelled)
+   → Fix: always guard: if (!file) return
+
+6. Large files silently fail
+   → The browser may reject files above a threshold
+   → Fix: validate file.size BEFORE calling uploadBytesResumable
+
+TESTING UPLOADS LOCALLY:
+  1. Open Chrome DevTools → Network tab
+  2. Filter by "firebasestorage"
+  3. Trigger upload, watch for:
+     - PUT request to storage.googleapis.com (should be 200)
+     - GET request for download URL (should be 200)
+  4. If PUT is 403 → rules issue
+  5. If PUT is 200 but URL fetch fails → check getDownloadURL call
+
+VERIFY RULES ARE DEPLOYED:
+  firebase storage:rules:get   (prints current live rules)
+  firebase deploy --only storage
+
+EMULATOR TESTING:
+  firebase emulators:start --only storage,auth
+  Set emulator in firebase.js:
+  connectStorageEmulator(storage, 'localhost', 9199)
+*/
