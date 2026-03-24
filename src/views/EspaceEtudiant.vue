@@ -1,4 +1,4 @@
-<!-- <template>
+ <template>
   <div class="etudiant-space">
     <h1>Student Space</h1>
     <div class="tabs">
@@ -96,4 +96,4 @@ h1 {
     font-size: 0.85rem;
   }
 }
-</style> -->
+</style>

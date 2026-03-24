@@ -119,8 +119,14 @@
         <p>No clubs found.</p>
       </div>
 
+      <!-- ✅ Clubs grid avec navigation cliquable -->
       <div v-else class="clubs-grid">
-        <div v-for="club in filteredClubs" :key="club.id" class="club-card">
+        <div 
+          v-for="club in filteredClubs" 
+          :key="club.id" 
+          class="club-card"
+          @click="goToClub(club.id)"
+        >
           <div class="club-card-header">
             <div class="club-avatar-lg">{{ club.name.charAt(0).toUpperCase() }}</div>
             <div class="club-status" :class="club.status">{{ club.status }}</div>
@@ -132,7 +138,7 @@
             <button
               v-if="!isMember(club.id) && !hasPendingRequest(club.id) && club.status === 'approved'"
               class="join-btn"
-              @click="joinClub(club.id)"
+              @click.stop="joinClub(club.id)"
             >Join</button>
             <button v-else-if="hasPendingRequest(club.id)" class="join-btn pending" disabled>Pending...</button>
             <span v-else-if="isMember(club.id)" class="joined-badge"><i class="fas fa-check-circle"></i> Joined</span>
@@ -155,13 +161,14 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { db } from '@/services/firebase'
 import { collection, getDocs, query, where, addDoc, orderBy } from 'firebase/firestore'
 import CreateClubForm from '@/components/Layouts/CreateClubForm.vue'
 
 const route = useRoute()
+const router = useRouter()
 const authStore = useAuthStore()
 
 // Tab state — can be set via query param ?tab=clubs
@@ -268,6 +275,12 @@ const handleClubCreated = () => {
   })
 }
 
+// ✅ Nouvelle fonction pour naviguer vers l'espace club
+const goToClub = (clubId) => {
+  console.log('Navigating to club:', clubId)
+  router.push(`/club/${clubId}`)
+}
+
 const shortDesc = (d) => d ? (d.length > 80 ? d.slice(0, 80) + '…' : d) : ''
 
 const formatDate = (ts) => {
@@ -360,12 +373,20 @@ const formatDate = (ts) => {
 
 /* Clubs grid */
 .clubs-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 1.25rem; }
+
+/* ✅ Style pour rendre les cartes clubs cliquables */
 .club-card {
   background: white; border-radius: 14px; padding: 1.25rem;
   border: 1.5px solid #f1f5f9; box-shadow: 0 1px 4px rgba(0,0,0,0.07);
   transition: transform 0.2s, box-shadow 0.2s;
+  cursor: pointer;
 }
-.club-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.1); }
+.club-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+  border-color: #2563eb;
+}
+
 .club-card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem; }
 .club-avatar-lg {
   width: 48px; height: 48px; border-radius: 12px;
@@ -388,8 +409,8 @@ const formatDate = (ts) => {
 }
 .join-btn:hover:not(:disabled) { background: #1d4ed8; }
 .join-btn.pending { background: #f59e0b; cursor: not-allowed; }
-.joined-badge { color: #10b981; font-weight: 600; font-size: 0.82rem; display: flex; align-items: center; gap: 0.3rem; }
-.pending-club { color: #94a3b8; font-size: 0.78rem; font-style: italic; }
+.joined-badge { color: #10b981; font-weight: 600; font-size: 0.82rem; display: flex; align-items: center; gap: 0.3rem; cursor: default; }
+.pending-club { color: #94a3b8; font-size: 0.78rem; font-style: italic; cursor: default; }
 
 /* Create club */
 .create-club-section { margin-top: 2rem; padding-top: 2rem; border-top: 1px solid #f1f5f9; }

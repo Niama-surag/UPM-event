@@ -33,6 +33,8 @@ const routes = [
       { path: 'notifications', name: 'notifications', component: EspaceNotification, meta: { requiresAuth: true } },
       { path: 'event/:id', name: 'event-detail', component: () => import('@/views/EventDetailView.vue'), meta: { requiresAuth: true } },
       { path: 'create', name: 'create', component: () => import('@/views/CreateEventView.vue'), meta: { requiresAuth: true } },
+      // ✅ Nouvelle route pour l'espace club
+      { path: 'club/:id', name: 'club-space', component: () => import('@/views/EspaceClub.vue'), meta: { requiresAuth: true } },
       { path: 'club', redirect: '/explore?tab=clubs' },
       { path: 'events', redirect: '/explore' },
       { path: 'admin', name: 'admin', component: AdminDashboard, meta: { requiresAdmin: true } }
