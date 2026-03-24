@@ -1,4 +1,4 @@
-<!-- <template>
+<template>
   <div class="club-management">
     <h3>Manage Clubs</h3>
     <table>
@@ -63,4 +63,4 @@ onMounted(fetchClubs)
 <style scoped>
 .pending { color: orange; }
 .approved { color: green; }
-</style> -->
+</style>
