@@ -10,7 +10,7 @@
 
       <!-- ── LEFT: Avatar section ────────────────────────────── -->
       <div class="avatar-card">
-        <div class="avatar-wrap" @click="triggerFileInput">
+        <div class="avatar-wrap" @click="openCloudinaryWidget">
           <img
             :src="previewUrl || authStore.userProfile?.photoURL || defaultAvatar"
             alt="Profile photo"
@@ -23,33 +23,13 @@
           </div>
         </div>
 
-        <!-- Hidden file input -->
-        <input
-          ref="fileInputRef"
-          type="file"
-          accept="image/jpeg,image/png,image/webp"
-          style="display:none"
-          @change="handleFileSelect"
-        />
-
-        <!-- File info + save/cancel -->
-        <Transition name="fade">
-          <div v-if="selectedFile" class="file-actions">
-            <div class="file-info">
-              <i class="fas fa-image"></i>
-              {{ selectedFile.name }}
-              <small>({{ formatSize(selectedFile.size) }})</small>
-            </div>
-            <div class="file-btns">
-              <button @click="savePhoto" :disabled="uploading" class="btn-save-photo">
-                <i class="fas fa-upload"></i>
-                {{ uploading ? 'Uploading…' : 'Save Photo' }}
-                <span v-if="uploading" class="upload-progress">{{ uploadPercent }}%</span>
-              </button>
-              <button @click="cancelPhoto" class="btn-cancel-photo">Cancel</button>
-            </div>
+        <!-- Progress indicator -->
+        <div v-if="uploading" class="upload-progress-container">
+          <div class="progress-bar">
+            <div class="progress-fill" :style="{ width: uploadPercent + '%' }"></div>
           </div>
-        </Transition>
+          <span class="progress-text">{{ uploadPercent }}%</span>
+        </div>
 
         <div class="avatar-meta">
           <h3>{{ authStore.userProfile?.name || authStore.user?.displayName || 'No name set' }}</h3>
@@ -150,16 +130,18 @@ import { ref, computed, reactive, onMounted } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { getAuth, EmailAuthProvider, reauthenticateWithCredential, updatePassword } from 'firebase/auth'
 import { db } from '@/services/firebase'
-import { collection, query, where, getDocs } from 'firebase/firestore'
+import { collection, query, where, getDocs, doc, updateDoc, serverTimestamp } from 'firebase/firestore'
 import RoleBadge from '@/components/ui/RoleBadge.vue'
 
 const authStore    = useAuthStore()
 const auth         = getAuth()
 const defaultAvatar = 'https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y'
 
+// Configuration Cloudinary
+const CLOUD_NAME = 'delbtkoa4'
+const UPLOAD_PRESET = 'upm-events-preset'
+
 // ── File upload state ─────────────────────────────────────────
-const fileInputRef  = ref(null)
-const selectedFile  = ref(null)
 const previewUrl    = ref('')
 const uploading     = ref(false)
 const uploadPercent = ref(0)
@@ -209,54 +191,72 @@ onMounted(async () => {
   statsData.value = { events: evSnap.size, clubs: clSnap.size, votes: vtSnap.size }
 })
 
-// ── File handling ─────────────────────────────────────────────
-const triggerFileInput = () => fileInputRef.value?.click()
-
-const handleFileSelect = (e) => {
-  const file = e.target.files?.[0]
-  if (!file) return
-
-  // Client-side validation
-  const MAX_SIZE = 5 * 1024 * 1024   // 5 MB
-  const ALLOWED  = ['image/jpeg', 'image/png', 'image/webp']
-  if (!ALLOWED.includes(file.type)) {
-    showToast('Only JPG, PNG, and WebP are allowed', 'error'); return
-  }
-  if (file.size > MAX_SIZE) {
-    showToast('File is too large (max 5 MB)', 'error'); return
+// ── Cloudinary Upload ─────────────────────────────────────────
+const openCloudinaryWidget = () => {
+  // Vérifier que le script Cloudinary est chargé
+  if (!window.cloudinary) {
+    showToast('Cloudinary script not loaded. Please refresh the page.', 'error')
+    return
   }
 
-  selectedFile.value = file
-  // Generate local preview URL — no upload yet (save bandwidth)
-  previewUrl.value = URL.createObjectURL(file)
-}
-
-const savePhoto = async () => {
-  if (!selectedFile.value) return
-  uploading.value = true
-  uploadPercent.value = 0
-  try {
-    // Simulate progress for UX (real progress requires XMLHttpRequest, not fetch)
-    const interval = setInterval(() => {
-      if (uploadPercent.value < 85) uploadPercent.value += 15
-    }, 200)
-    await authStore.updateUserProfile({ name: form.name, photoFile: selectedFile.value })
-    clearInterval(interval)
-    uploadPercent.value = 100
-    showToast('Profile photo updated! ✅', 'success')
-    cancelPhoto()
-  } catch (e) {
-    showToast('Upload failed: ' + e.message, 'error')
-  } finally {
-    uploading.value = false
-  }
-}
-
-const cancelPhoto = () => {
-  selectedFile.value = null
-  if (previewUrl.value) URL.revokeObjectURL(previewUrl.value)   // free memory
-  previewUrl.value = ''
-  if (fileInputRef.value) fileInputRef.value.value = ''
+  const widget = window.cloudinary.createUploadWidget(
+    {
+      cloudName: CLOUD_NAME,
+      uploadPreset: UPLOAD_PRESET,
+      sources: ['local'],
+      multiple: false,
+      maxFileSize: 5 * 1024 * 1024, // 5 MB
+      folder: 'profile-pictures',
+      cropping: true,
+      croppingAspectRatio: 1,
+      croppingShowDimensions: true,
+      clientAllowedFormats: ['jpg', 'jpeg', 'png', 'webp'],
+      resourceType: 'image'
+    },
+    async (error, result) => {
+      if (error) {
+        console.error('Upload error:', error)
+        showToast('Upload failed: ' + error.message, 'error')
+        uploading.value = false
+        return
+      }
+      
+      if (result && result.event === 'success') {
+        const url = result.info.secure_url
+        previewUrl.value = url
+        uploadPercent.value = 100
+        
+        // Sauvegarder l'URL dans Firestore
+        try {
+          await updateDoc(doc(db, 'users', authStore.user.uid), {
+            photoURL: url,
+            updatedAt: serverTimestamp()
+          })
+          
+          // Mettre à jour le store auth
+          if (authStore.userProfile) {
+            authStore.userProfile.photoURL = url
+          }
+          
+          showToast('Profile photo updated! ✅', 'success')
+        } catch (err) {
+          showToast('Failed to save photo URL: ' + err.message, 'error')
+        }
+        
+        uploading.value = false
+        
+      } else if (result && result.event === 'progress') {
+        uploading.value = true
+        uploadPercent.value = Math.round((result.bytesUploaded / result.totalBytes) * 100)
+      } else if (result && result.event === 'close') {
+        // Widget fermé sans upload
+        uploading.value = false
+        uploadPercent.value = 0
+      }
+    }
+  )
+  
+  widget.open()
 }
 
 // ── Save name ─────────────────────────────────────────────────
@@ -279,7 +279,6 @@ const savePassword = async () => {
   try {
     const user       = auth.currentUser
     const credential = EmailAuthProvider.credential(user.email, pwdForm.current)
-    // Re-authenticate first (Firebase security requirement for sensitive ops)
     await reauthenticateWithCredential(user, credential)
     await updatePassword(user, pwdForm.new)
     pwdForm.current = ''; pwdForm.new = ''; pwdForm.confirm = ''
@@ -326,15 +325,10 @@ const showToast = (message, type = 'success') => {
 .avatar-wrap:hover .avatar-overlay { opacity: 1; }
 .avatar-overlay i { font-size: 1.3rem; }
 
-.file-actions { margin-bottom: 1rem; padding: 0.85rem; background: #f8fafc; border-radius: 10px; border: 1px solid #e2e8f0; }
-.file-info { font-size: 0.78rem; color: #475569; display: flex; align-items: center; gap: 0.4rem; margin-bottom: 0.6rem; word-break: break-all; }
-.file-btns { display: flex; gap: 0.5rem; }
-.btn-save-photo { flex: 1; padding: 0.48rem 0.6rem; background: #2563eb; color: white; border: none; border-radius: 7px; font-size: 0.8rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.35rem; transition: background 0.18s; }
-.btn-save-photo:hover:not(:disabled) { background: #1d4ed8; }
-.btn-save-photo:disabled { opacity: 0.6; cursor: not-allowed; }
-.upload-progress { font-size: 0.7rem; opacity: 0.8; }
-.btn-cancel-photo { padding: 0.48rem 0.75rem; background: none; border: 1.5px solid #e2e8f0; border-radius: 7px; font-size: 0.8rem; font-weight: 600; color: #64748b; cursor: pointer; transition: all 0.15s; }
-.btn-cancel-photo:hover { border-color: #dc2626; color: #dc2626; }
+.upload-progress-container { margin: 0.75rem auto; width: 120px; text-align: center; }
+.progress-bar { height: 4px; background: #e2e8f0; border-radius: 2px; overflow: hidden; margin-bottom: 0.25rem; }
+.progress-fill { height: 100%; background: #2563eb; border-radius: 2px; transition: width 0.3s; }
+.progress-text { font-size: 0.7rem; color: #2563eb; font-weight: 500; }
 
 .avatar-meta h3 { font-size: 1.05rem; font-weight: 700; color: #1e293b; margin: 0 0 0.25rem; }
 .avatar-meta p  { font-size: 0.82rem; color: #64748b; margin: 0 0 0.6rem; }
@@ -374,9 +368,6 @@ const showToast = (message, type = 'success') => {
 .toast.error   { background: #dc2626; color: white; }
 .toast-enter-active, .toast-leave-active { transition: all 0.22s ease; }
 .toast-enter-from, .toast-leave-to { opacity: 0; transform: translateY(8px); }
-
-.fade-enter-active, .fade-leave-active { transition: opacity 0.2s; }
-.fade-enter-from, .fade-leave-to { opacity: 0; }
 
 @media (max-width: 768px) {
   .profile-grid { grid-template-columns: 1fr; }

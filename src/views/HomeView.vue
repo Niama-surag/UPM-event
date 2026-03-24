@@ -222,7 +222,7 @@ const formatTime = (ts) => {
 }
 
 
-.hero::before {
+.hero::before { 
   content: '';
   position: absolute;
   top: 0;
