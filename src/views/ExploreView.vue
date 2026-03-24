@@ -161,27 +161,29 @@
             <div class="field"><label>Description *</label><textarea v-model="newEvent.description" rows="3"></textarea></div>
             <div class="form-row">
               <div class="field"><label>Start Date & Time *</label><input type="datetime-local" v-model="newEvent.startDate" /></div>
-              <!-- END TIME — required for status computation -->
               <div class="field">
                 <label>End Date & Time * <span class="field-hint">(used to compute active/expired)</span></label>
                 <input type="datetime-local" v-model="newEvent.endDate" />
               </div>
             </div>
             <div class="form-row">
-              <div class="field">
-                <label>Type *</label>
-                <select v-model="newEvent.type"><option value="free">Free</option><option value="paid">Paid</option></select>
-              </div>
-              <div class="field" v-if="newEvent.type === 'paid'">
-                <label>Price (€)</label>
-                <input type="number" v-model="newEvent.price" min="0" step="0.01" />
-              </div>
+              <div class="field"><label>Type *</label><select v-model="newEvent.type"><option value="free">Free</option><option value="paid">Paid</option></select></div>
+              <div class="field" v-if="newEvent.type === 'paid'"><label>Price (€)</label><input type="number" v-model="newEvent.price" min="0" step="0.01" /></div>
             </div>
+            
+            <!-- 👇 AJOUT DE L'IMAGE UPLOADER (TON COMPOSANT) -->
+            <div class="field">
+              <label>Event Image *</label>
+              <ImageUploader v-model="newEvent.imageURL" />
+              <p v-if="formSubmitted && !newEvent.imageURL" class="error-text">L'image est obligatoire</p>
+            </div>
+            <!-- 👆 FIN DE L'AJOUT -->
+            
             <div class="form-actions">
               <button @click="createEvent" :disabled="creatingEvent" class="btn-primary-sm">
                 {{ creatingEvent ? 'Creating…' : 'Create Event' }}
               </button>
-              <button @click="showEventForm = false" class="btn-ghost-sm">Cancel</button>
+              <button @click="cancelEventForm" class="btn-ghost-sm">Cancel</button>
             </div>
           </div>
         </div>
@@ -279,9 +281,7 @@
               <div class="member-info">
                 <span class="member-name">{{ m.name || m.email }}</span>
                 <div class="member-badges">
-                  <!-- App role -->
                   <RoleBadge :role="m.clubRole" />
-                  <!-- Custom club roles (can have multiple) -->
                   <span
                     v-for="cr in (m.customRoles || [])"
                     :key="cr"
@@ -289,7 +289,6 @@
                   >{{ cr }}</span>
                 </div>
               </div>
-              <!-- Assign club role -->
               <select
                 v-if="rbac.can.assignRoles(userClub) && m.uid !== authStore.user?.uid"
                 :value="m.clubRole"
@@ -300,7 +299,6 @@
                 <option value="moderator">Moderator</option>
                 <option value="club_admin">Club Admin</option>
               </select>
-              <!-- Assign custom roles -->
               <select
                 v-if="rbac.can.assignRoles(userClub) && customRoles.length > 0"
                 @change="toggleCustomRole(m.uid, $event.target.value)"
@@ -441,6 +439,7 @@ import {
 import RoleBadge from '@/components/ui/RoleBadge.vue'
 import TutorialOverlay from '@/components/ui/TutorialOverlay.vue'
 import { useTutorial } from '@/composables/useTutorial'
+import ImageUploader from '@/components/ImageUploader.vue'  // 👈 AJOUT
 
 const route      = useRoute()
 const router     = useRouter()
@@ -494,18 +493,23 @@ const newRoleName     = ref('')
 // Events form
 const showEventForm   = ref(false)
 const creatingEvent   = ref(false)
-const newEvent        = ref({ title: '', description: '', startDate: '', endDate: '', location: '', type: 'free', price: 0 })
+const formSubmitted   = ref(false)  // 👈 AJOUT pour validation
+const newEvent        = ref({ 
+  title: '', 
+  description: '', 
+  startDate: '', 
+  endDate: '', 
+  location: '', 
+  type: 'free', 
+  price: 0,
+  imageURL: ''  // 👈 AJOUT
+})
 
 const toast = ref({ show: false, message: '', type: 'success' })
 
 // ── Computed ──────────────────────────────────────────────────
 const approvedClubs = computed(() => allClubs.value.filter(c => c.status === 'approved'))
 
-// ── Event status logic ─────────────────────────────────────────
-// WHY pure function here?
-//   → Same logic used in template, filtering, and EventDetailView
-//   → No state to manage — just compares timestamps at render time
-//   → If endDate changes in Firestore, next re-render picks it up
 const computeEventStatus = (event) => {
   const now = new Date()
   const end = event.endDate?.toDate
@@ -517,7 +521,7 @@ const computeEventStatus = (event) => {
 }
 
 const filteredEvents = computed(() => events.value
-  .filter(e => e.status === 'approved')   // only show approved events
+  .filter(e => e.status === 'approved')
   .filter(e => {
     const s  = computeEventStatus(e)
     const ok1 = e.title?.toLowerCase().includes(eventSearch.value.toLowerCase())
@@ -748,14 +752,34 @@ const removeMember = async (uid) => {
   showToast('Member removed', 'error')
 }
 
-// ── Event actions ─────────────────────────────────────────────
+// ── Event actions (MODIFIED) ─────────────────────────────────────────────
+const cancelEventForm = () => {
+  showEventForm.value = false
+  formSubmitted.value = false
+  newEvent.value = { 
+    title: '', description: '', startDate: '', endDate: '', 
+    location: '', type: 'free', price: 0, imageURL: '' 
+  }
+}
+
 const createEvent = async () => {
+  formSubmitted.value = true
+  
+  // Validation de l'image
+  if (!newEvent.value.imageURL) {
+    showToast('Veuillez ajouter une image', 'error')
+    return
+  }
+  
   if (!newEvent.value.title || !newEvent.value.startDate || !newEvent.value.endDate) {
-    showToast('Fill in all required fields', 'error'); return
+    showToast('Fill in all required fields', 'error')
+    return
   }
   if (new Date(newEvent.value.endDate) <= new Date(newEvent.value.startDate)) {
-    showToast('End date must be after start date', 'error'); return
+    showToast('End date must be after start date', 'error')
+    return
   }
+  
   creatingEvent.value = true
   try {
     await addDoc(collection(db, 'events'), {
@@ -765,11 +789,16 @@ const createEvent = async () => {
       startDate: new Date(newEvent.value.startDate),
       endDate:   new Date(newEvent.value.endDate),
       price:     newEvent.value.type === 'free' ? 0 : Number(newEvent.value.price),
+      imageURL:  newEvent.value.imageURL,  // 👈 AJOUT
       createdAt: serverTimestamp(),
       createdBy: authStore.user.uid
     })
-    newEvent.value = { title: '', description: '', startDate: '', endDate: '', location: '', type: 'free', price: 0 }
+    newEvent.value = { 
+      title: '', description: '', startDate: '', endDate: '', 
+      location: '', type: 'free', price: 0, imageURL: '' 
+    }
     showEventForm.value = false
+    formSubmitted.value = false
     await fetchEvents()
     showToast('Event submitted for approval ✅', 'success')
   } catch (e) { showToast('Error: ' + e.message, 'error') }
@@ -826,11 +855,9 @@ const showToast = (message, type='success') => {
 .search-wrap input:focus { border-color:#2563eb; }
 .filter-select { padding:0.62rem 0.9rem; border:1.5px solid #e2e8f0; border-radius:9px; font-size:0.88rem; background:white; outline:none; cursor:pointer; }
 
-/* Events */
 .events-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(250px,1fr)); gap:1.25rem; }
 .event-card { background:white; border-radius:14px; overflow:hidden; cursor:pointer; box-shadow:0 1px 4px rgba(0,0,0,0.07); border:1.5px solid #f1f5f9; transition:transform 0.2s,box-shadow 0.2s; }
 .event-card:hover:not(.is-expired) { transform:translateY(-3px); box-shadow:0 8px 24px rgba(0,0,0,0.1); }
-/* Expired events: dimmed + grayscale */
 .event-card.is-expired { opacity:0.55; filter:grayscale(40%); cursor:default; }
 .event-img-wrap { position:relative; height:155px; background:#f1f5f9; overflow:hidden; }
 .event-img-wrap img { width:100%; height:100%; object-fit:cover; display:block; transition:transform 0.3s; }
@@ -838,12 +865,9 @@ const showToast = (message, type='success') => {
 .price-badge { position:absolute; top:10px; right:10px; padding:0.22rem 0.6rem; border-radius:20px; font-size:0.7rem; font-weight:700; color:white; }
 .price-badge.free { background:#10b981; }
 .price-badge.paid { background:#f59e0b; color:#1f2937; }
-
-/* Status badges — computed live */
 .status-badge { position:absolute; top:10px; left:10px; padding:0.22rem 0.65rem; border-radius:20px; font-size:0.72rem; font-weight:700; }
 .status-badge.active  { background:rgba(16,185,129,0.9); color:white; }
 .status-badge.expired { background:rgba(100,116,139,0.85); color:white; }
-
 .event-body { padding:1rem; }
 .event-club-tag { display:inline-block; background:#eff6ff; color:#2563eb; font-size:0.7rem; font-weight:600; padding:0.18rem 0.55rem; border-radius:20px; margin-bottom:0.4rem; }
 .event-body h3 { font-size:0.92rem; font-weight:700; color:#1e293b; margin:0 0 0.3rem; }
@@ -856,18 +880,14 @@ const showToast = (message, type='success') => {
 .register-btn.registered { background:#10b981; cursor:default; }
 .register-btn.btn-expired { background:#94a3b8; cursor:not-allowed; }
 
-/* My club panel */
 .my-club-panel { background:white; border-radius:14px; padding:1.5rem; border:1.5px solid #e2e8f0; margin-bottom:2rem; box-shadow:0 1px 4px rgba(0,0,0,0.06); }
 .my-club-header { display:flex; align-items:center; gap:1rem; margin-bottom:1.25rem; }
 .club-av-lg { width:48px; height:48px; border-radius:12px; background:linear-gradient(135deg,#2563eb,#7c3aed); color:white; font-size:1.3rem; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
 .my-club-header h3 { margin:0 0 0.3rem; font-size:1.05rem; color:#1e293b; }
-
 .club-mgmt-tabs { display:flex; gap:0.4rem; border-bottom:1.5px solid #f1f5f9; margin-bottom:1.25rem; flex-wrap:wrap; }
 .club-mgmt-tabs button { padding:0.5rem 1rem; background:none; border:none; border-bottom:2px solid transparent; margin-bottom:-1.5px; font-size:0.85rem; font-weight:600; color:#64748b; cursor:pointer; transition:all 0.15s; }
 .club-mgmt-tabs button:hover { color:#2563eb; }
 .club-mgmt-tabs button.active { color:#2563eb; border-bottom-color:#2563eb; }
-
-/* Pathways manager */
 .pathways-manager { display:grid; grid-template-columns:200px 1fr; gap:1.25rem; min-height:300px; }
 .pathways-sidebar { background:#f8fafc; border-radius:10px; padding:0.75rem; }
 .sidebar-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:0.75rem; }
@@ -876,7 +896,6 @@ const showToast = (message, type='success') => {
 .pathway-nav-item:hover { background:#e2e8f0; }
 .pathway-nav-item.active { background:#eff6ff; color:#2563eb; }
 .pw-count { background:#e2e8f0; color:#64748b; font-size:0.7rem; padding:0.1rem 0.35rem; border-radius:8px; }
-
 .pathway-editor { background:#f8fafc; border-radius:10px; padding:1.25rem; }
 .pathway-editor h4 { margin:0 0 1rem; font-size:0.95rem; color:#1e293b; }
 .pathway-detail-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:0.5rem; }
@@ -889,13 +908,9 @@ const showToast = (message, type='success') => {
 .course-url-input { flex:1.5; padding:0.45rem 0.65rem; border:1.5px solid #e2e8f0; border-radius:7px; font-size:0.82rem; outline:none; }
 .course-title-input:focus, .course-url-input:focus { border-color:#2563eb; }
 .pathway-placeholder { display:flex; align-items:center; justify-content:center; color:#94a3b8; font-size:0.85rem; }
-
-/* Custom roles */
 .custom-roles-grid { display:flex; flex-wrap:wrap; gap:0.5rem; margin-bottom:1rem; }
 .custom-role-chip { display:flex; align-items:center; gap:0.35rem; }
 .custom-role-badge { background:#eff6ff; color:#2563eb; border:1px solid #bfdbfe; padding:0.2rem 0.65rem; border-radius:20px; font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:0.04em; }
-
-/* Members */
 .members-list { display:flex; flex-direction:column; gap:0.5rem; }
 .member-row { display:flex; align-items:center; gap:0.75rem; padding:0.75rem; background:#f8fafc; border-radius:10px; flex-wrap:wrap; }
 .member-av { width:34px; height:34px; border-radius:50%; object-fit:cover; flex-shrink:0; }
@@ -903,8 +918,6 @@ const showToast = (message, type='success') => {
 .member-name { font-size:0.88rem; font-weight:600; color:#1e293b; }
 .member-badges { display:flex; flex-wrap:wrap; gap:0.3rem; align-items:center; }
 .role-select-sm { padding:0.25rem 0.5rem; border:1.5px solid #e2e8f0; border-radius:6px; font-size:0.78rem; cursor:pointer; outline:none; }
-
-/* Clubs grid */
 .clubs-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:1.25rem; }
 .club-card { background:white; border-radius:14px; padding:1.25rem; border:1.5px solid #f1f5f9; box-shadow:0 1px 4px rgba(0,0,0,0.06); transition:transform 0.2s; }
 .club-card:hover { transform:translateY(-2px); box-shadow:0 6px 20px rgba(0,0,0,0.09); }
@@ -919,8 +932,6 @@ const showToast = (message, type='success') => {
 .join-btn:hover:not(:disabled) { background:#1d4ed8; }
 .join-btn.pending { background:#f59e0b; cursor:not-allowed; }
 .joined-text { font-size:0.82rem; color:#10b981; font-weight:600; display:flex; align-items:center; gap:0.3rem; }
-
-/* Forms */
 .inline-form { background:#f8fafc; border-radius:12px; padding:1.5rem; border:1.5px solid #e2e8f0; margin-top:1rem; }
 .inline-form h4 { margin:0 0 0.75rem; font-size:1rem; color:#1e293b; }
 .form-hint { background:#fffbeb; border:1px solid #fde68a; border-radius:8px; padding:0.6rem 0.9rem; font-size:0.82rem; color:#92400e; margin-bottom:1rem; }
@@ -944,7 +955,6 @@ const showToast = (message, type='success') => {
 .btn-dashed { padding:0.7rem 1.4rem; border:2px dashed #cbd5e1; background:none; color:#64748b; border-radius:10px; font-size:0.88rem; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:0.5rem; transition:all 0.18s; margin-top:1.5rem; }
 .btn-dashed:hover { border-color:#2563eb; color:#2563eb; background:#eff6ff; }
 .btn-reset { padding:0.5rem 1.1rem; border:1.5px solid #e2e8f0; background:none; border-radius:8px; color:#64748b; cursor:pointer; font-size:0.85rem; margin-top:0.75rem; }
-
 .pending-notice { background:#fffbeb; border:1.5px solid #fde68a; border-radius:10px; padding:1rem 1.25rem; margin:1rem 0; font-size:0.88rem; color:#92400e; display:flex; align-items:center; gap:0.5rem; }
 .create-club-section { margin-top:1.5rem; }
 .inner-title { font-size:0.92rem; font-weight:700; color:#1e293b; margin:1rem 0 0.75rem; }
@@ -952,13 +962,12 @@ const showToast = (message, type='success') => {
 .empty-state { text-align:center; padding:3rem; }
 .empty-state p { color:#64748b; margin:0.5rem 0 0.75rem; }
 .loading-text { color:#94a3b8; text-align:center; padding:2rem; }
-
+.error-text { color:#dc2626; font-size:0.75rem; margin-top:0.3rem; }
 .toast { position:fixed; bottom:5rem; right:1.5rem; z-index:9999; padding:0.85rem 1.5rem; border-radius:10px; font-weight:600; font-size:0.88rem; box-shadow:0 8px 30px rgba(0,0,0,0.15); }
 .toast.success { background:#10b981; color:white; }
 .toast.error   { background:#dc2626; color:white; }
 .toast-enter-active,.toast-leave-active { transition:all 0.22s ease; }
 .toast-enter-from,.toast-leave-to { opacity:0; transform:translateY(8px); }
-
 @media (max-width:700px) {
   .explore { padding:1rem; }
   .form-row { grid-template-columns:1fr; }

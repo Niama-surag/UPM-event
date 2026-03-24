@@ -17,6 +17,7 @@ const EspaceNotification = () => import('@/views/EspaceNotification.vue')
 const AdminDashboard     = () => import('@/views/AdminDashboard.vue')
 const EventDetailView    = () => import('@/views/EventDetailView.vue')
 const AboutView          = () => import('@/views/AboutView.vue')
+const CreateEventView    = () => import('@/views/CreateEventView.vue')  // 👈 AJOUTÉ
 
 const routes = [
   {
@@ -28,6 +29,7 @@ const routes = [
       { path: 'about',    name: 'about',          component: AboutView },
       { path: 'login',    name: 'login',          component: LoginView },
       { path: 'register', name: 'register',       component: RegisterView },
+     { path: 'create', name: 'create', component: CreateEventView },
       { path: 'polls',    name: 'polls',          component: PollsView },
 
       // Public pathway browser
