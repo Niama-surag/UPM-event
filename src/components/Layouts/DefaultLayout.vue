@@ -12,14 +12,24 @@
           <li><router-link to="/polls" class="nav-link" @click="closeMenu"><i class="fas fa-poll"></i><span>Polls</span></router-link></li>
           <li><router-link to="/pathways" class="nav-link" @click="closeMenu"><i class="fas fa-road"></i><span>Pathway Courses</span></router-link></li>
           <template v-if="authStore.user">
+<<<<<<< HEAD
+=======
+            <li><router-link to="/explore" class="nav-link" @click="closeMenu"><i class="fas fa-compass"></i><span>Explore</span></router-link></li>
+            <li><router-link to="/polls" class="nav-link" @click="closeMenu"><i class="fas fa-poll"></i><span>Polls</span></router-link></li>
+>>>>>>> 1ead882b00a0c0f5379cafac85f95deff58efc13
             <li>
               <router-link to="/notifications" class="nav-link notif-link" @click="closeMenu">
                 <i class="fas fa-bell"></i><span>Alerts</span>
                 <span v-if="unreadCount > 0" class="notif-badge">{{ unreadCount }}</span>
               </router-link>
             </li>
+<<<<<<< HEAD
             <li v-if="authStore.isAdmin()">
               <router-link to="/admin" class="nav-link admin-link" @click="closeMenu"><i class="fas fa-shield-alt"></i><span>Admin Dashboard</span></router-link>
+=======
+            <li v-if="authStore.userProfile?.role === 'admin'">
+              <router-link to="/admin" class="nav-link admin-link" @click="closeMenu"><i class="fas fa-shield-alt"></i><span>Admin</span></router-link>
+>>>>>>> 1ead882b00a0c0f5379cafac85f95deff58efc13
             </li>
           </template>
         </ul>
@@ -259,4 +269,9 @@ address p { font-size: 0.85rem; color: #94a3b8; margin: 0; }
   .btn-login, .btn-register { display: none; }
   .footer-bottom { justify-content: center; text-align: center; }
 }
+<<<<<<< HEAD
 </style>
+=======
+@media (max-width: 480px) { .btn-login, .btn-register { display: none; } }
+</style>
+>>>>>>> 1ead882b00a0c0f5379cafac85f95deff58efc13
