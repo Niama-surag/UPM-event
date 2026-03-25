@@ -5,9 +5,9 @@
       <button :class="{ active: activeTab === 'profile' }" @click="activeTab = 'profile'">
         <i class="fas fa-user"></i> Profile
       </button>
-      <button :class="{ active: activeTab === 'notifications' }" @click="activeTab = 'notifications'">
+      <!-- <button :class="{ active: activeTab === 'notifications' }" @click="activeTab = 'notifications'">
         <i class="fas fa-bell"></i> Notifications
-      </button>
+      </button> -->
       <button :class="{ active: activeTab === 'dashboard' }" @click="activeTab = 'dashboard'">
         <i class="fas fa-chart-bar"></i> Dashboard
       </button>
@@ -17,9 +17,9 @@
       <div v-if="activeTab === 'profile'">
         <ProfileEdit />
       </div>
-      <div v-if="activeTab === 'notifications'">
+      <!-- <div v-if="activeTab === 'notifications'">
         <NotificationsList />
-      </div>
+      </div> -->
       <div v-if="activeTab === 'dashboard'">
         <StudentDashboard />
       </div>

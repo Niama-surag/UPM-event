@@ -103,7 +103,7 @@ import { useRouter, useRoute } from 'vue-router'
 
 // ── Background image ──────────────────────────────────────────
 // Using the provided URL. For production, download and put in /public/login-bg.jpg
-const bgImage = 'https://st.perplexity.ai/estatic/0b226c450798410ac541646c86ec31afd840e5beab817a5d84fa821e7db61981ec84c3b4a3f072a7a2e1899c9fb06c6ee188b36952e5e79a35e5b8058ab7a9c62bef32ea31b50d428860cdffb1aa35243b4aba664ce131bdbabfc433871a378d'
+// const bgImage = 'https://st.perplexity.ai/estatic/0b226c450798410ac541646c86ec31afd840e5beab817a5d84fa821e7db61981ec84c3b4a3f072a7a2e1899c9fb06c6ee188b36952e5e79a35e5b8058ab7a9c62bef32ea31b50d428860cdffb1aa35243b4aba664ce131bdbabfc433871a378d'
 
 const authStore = useAuthStore()
 const router    = useRouter()

@@ -11,10 +11,10 @@
         <i class="fas fa-calendar-check"></i> Mes Événements
         <span class="count">{{ myEvents.length }}</span>
       </button>
-      <button :class="{ active: activeTab === 'waiting-list' }" @click="activeTab = 'waiting-list'">
+      <!-- <button :class="{ active: activeTab === 'waiting-list' }" @click="activeTab = 'waiting-list'">
         <i class="fas fa-clock"></i> Liste d'Attente
         <span class="count">{{ waitingEventsCount }}</span>
-      </button>
+      </button> -->
     </div>
 
     <!-- Loading -->
